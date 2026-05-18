@@ -113,8 +113,8 @@ const challenges: ChallengeItem[] = [
                 `<div class="card"><h1>Hello, ${escape(props.name)}!</h1><p>${escape(props.mission)} · ready for orbit.</p></div>`,
         },
         baseStyles: `
-            body { display: flex; flex-direction: column; gap: 8px; }
             .card { background: #0d0b2e; color: #fef3c7; padding: 10px 14px; border-radius: 10px; font-family: system-ui; margin: 0; }
+            .card + .card { margin-top: 8px; }
             .card h1 { font-size: 18px; line-height: 1.1; margin: 0 0 2px; font-weight: bold; }
             .card p { font-size: 12px; margin: 0; opacity: 0.85; }
         `,

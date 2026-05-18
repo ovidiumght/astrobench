@@ -21,7 +21,10 @@ const lineArr = Array.from({ length: lineCount }, (_, i) => i + 1);
             <span class="grid h-4 w-4 place-items-center font-sketch text-pen-red text-sm -rotate-[4deg]">✦</span>
             <span class="font-sketch text-base text-ink-soft">{file}</span>
             {note && <span class="font-sketch text-sm text-pen-red/80 italic">— {note}</span>}
-            <span class="ml-auto font-sketch text-sm text-ink-soft">↵ run · ⌘S save</span>
+            <span class="ml-auto font-sketch text-sm text-ink-soft/70 flex items-center gap-1.5" title="this snippet is for reading — the editable cells say ‘live’">
+                <span class="inline-block h-2 w-2 rounded-full bg-ink-soft/40"></span>
+                read-only
+            </span>
         </div>
 
         <div class="flex font-type text-[14.5px] leading-[1.85] relative">

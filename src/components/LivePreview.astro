@@ -17,6 +17,7 @@ const { cellId, rotate = 2.5, caption, frameHeight = 220, class: cls = "" } = As
 const previewBaseStyles =
     "html,body{margin:0;padding:14px 16px;font-family:system-ui,sans-serif;color:#1a1a2e;line-height:1.5;background:#fff;scrollbar-width:thin;scrollbar-color:rgba(200,69,69,0.35) transparent}" +
     "h1{font-size:32px;line-height:1.1;margin:0 0 8px}h2{font-size:24px;line-height:1.2;margin:0 0 6px}h3{font-size:20px;margin:0 0 4px}p{margin:0 0 10px}a{color:#0066cc}" +
+    "ul,ol{padding-left:22px;margin:6px 0 12px}li{margin:0 0 4px}li:last-child{margin-bottom:0}" +
     "::-webkit-scrollbar{width:10px;height:10px}" +
     "::-webkit-scrollbar-track{background:transparent}" +
     "::-webkit-scrollbar-thumb{background-color:rgba(200,69,69,0.35);border:2px solid transparent;border-radius:999px;background-clip:padding-box}" +
@@ -26,39 +27,47 @@ const previewBaseStyles =
 const previewSrcDoc = `<!doctype html><html><head><style>${previewBaseStyles}</style></head><body></body></html>`;
 ---
 
-<div
-    class:list={["relative bg-white shadow-polaroid border border-ink-dark/8 p-3 pb-12 max-w-[360px]", cls]}
-    style={`transform:rotate(${rotate}deg)`}
-    data-live-preview={cellId}
->
-    <span
-        class="absolute -top-4 left-1/2 -translate-x-1/2 w-28 h-7 bg-tape border-x border-tape-edge"
-        style="transform:translateX(-50%) rotate(1deg); background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"
-    ></span>
+{/*
+ * Sticky wrapper keeps the polaroid visible on tall lessons (helps on short
+ * viewports like a 14" MBP where you would otherwise scroll past the preview
+ * while editing). Transform stays on the inner polaroid so sticky positioning
+ * isn't disturbed by the rotation.
+ */}
+<div class:list={["lg:sticky lg:top-6 lg:z-10 max-w-[360px]", cls]} data-live-preview-anchor={cellId}>
+    <div
+        class="relative bg-white shadow-polaroid border border-ink-dark/8 p-3 pb-12"
+        style={`transform:rotate(${rotate}deg)`}
+        data-live-preview={cellId}
+    >
+        <span
+            class="absolute -top-4 left-1/2 -translate-x-1/2 w-28 h-7 bg-tape border-x border-tape-edge"
+            style="transform:translateX(-50%) rotate(1deg); background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"
+        ></span>
 
-    <div class="relative bg-paper-yellow border-2 border-paper-edge overflow-hidden">
-        <iframe
-            data-live-preview-frame
-            sandbox="allow-same-origin"
-            class="block w-full bg-white"
-            style={`height:${frameHeight}px;border:0;`}
-            srcdoc={previewSrcDoc}
-        ></iframe>
+        <div class="relative bg-paper-yellow border-2 border-paper-edge overflow-hidden">
+            <iframe
+                data-live-preview-frame
+                sandbox="allow-same-origin"
+                class="block w-full bg-white"
+                style={`height:${frameHeight}px;border:0;`}
+                srcdoc={previewSrcDoc}
+            ></iframe>
 
-        <div
-            data-live-preview-error
-            class="paper-scrollbar hidden absolute inset-0 bg-pen-red/10 border-2 border-pen-red border-dashed p-4 font-sketch text-pen-red text-base overflow-auto"
-        >
+            <div
+                data-live-preview-error
+                class="paper-scrollbar hidden absolute inset-0 bg-pen-red/10 border-2 border-pen-red border-dashed p-4 font-sketch text-pen-red text-base overflow-auto"
+            >
+            </div>
         </div>
-    </div>
 
-    {
-        caption && (
-            <p class="absolute bottom-2.5 left-0 right-0 text-center font-title text-[22px] text-ink-soft -rotate-1">
-                {caption}
-            </p>
-        )
-    }
+        {
+            caption && (
+                <p class="absolute bottom-2.5 left-0 right-0 text-center font-title text-[22px] text-ink-soft -rotate-1">
+                    {caption}
+                </p>
+            )
+        }
+    </div>
 </div>
 
 <script>
