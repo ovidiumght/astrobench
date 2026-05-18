@@ -1,0 +1,184 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import RunButton from "~/components/RunButton.astro";
+import Marker from "~/components/Marker.astro";
+import { chapter2, totalXp, lessonUrl } from "~/lib/lessons";
+---
+
+<NotebookLayout
+    title="Mission Log: Make it real"
+    description="Layouts, content, islands, and a real launch — turn your dashboard into a product."
+    chapterId="mission-log"
+>
+    <main class="relative z-10 mx-auto max-w-[1500px] px-8 pb-14">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 items-start">
+            <article class="relative bg-paper-yellow shadow-paper border-2 border-paper-edge rounded-sm overflow-hidden">
+                <span
+                    class="absolute -top-3 left-[28%] w-32 h-7 bg-tape border-x border-tape-edge -rotate-2 z-10 pointer-events-none"
+                    style="background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"
+                ></span>
+                <span class="absolute -top-2 right-[20%] w-24 h-6 bg-marker-pink/55 border-x border-pen-red/25 rotate-3 z-10 pointer-events-none"></span>
+
+                <div class="absolute top-3 left-0 right-0 flex justify-center gap-32 pointer-events-none">
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                </div>
+
+                <div class="relative pl-24 pr-12 pt-16 pb-14 ruled">
+                    <div class="absolute left-[68px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+                    <div class="absolute left-[72px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+
+                    <div class="absolute -left-2 top-12 -rotate-[10deg] font-sketch text-pen-red text-lg leading-tight w-20 text-center pointer-events-none">
+                        <div class="text-xs uppercase tracking-wider">ch.</div>
+                        <div class="text-3xl leading-none">2</div>
+                    </div>
+
+                    <div class="relative mb-2">
+                        <h1 class="font-title text-[58px] leading-[0.9] text-ink-dark">
+                            Mission Log:
+                            <br />
+                            <Marker color="pink">Make it real</Marker>
+                        </h1>
+                    </div>
+
+                    <p class="font-hand text-[20px] leading-[32px] text-ink-dark/90 max-w-[560px] mb-3">{chapter2.tagline}</p>
+
+                    <p class="font-sketch text-lg text-ink-soft italic max-w-[560px] mb-10">
+                        you finished Ch. 1. now turn the dashboard into a <span class="text-pen-red">product</span>.
+                    </p>
+
+                    <h2 class="font-title text-[34px] text-ink-dark mb-2">contents</h2>
+
+                    <ol class="space-y-1 max-w-[640px] mb-10">
+                        {
+                            chapter2.lessons.map((l) => {
+                                const isInteractive = l.step === 1;
+                                return (
+                                    <li class="group flex items-baseline gap-3 py-1" data-toc-item={l.slug}>
+                                        <span class="font-sketch text-base text-pen-red w-7 shrink-0">{String(l.step).padStart(2, "0")}.</span>
+                                        <a
+                                            href={lessonUrl(l)}
+                                            class="font-title text-[26px] leading-tight text-ink-dark group-hover:text-pen-red transition-colors decoration-pen-red/0 group-hover:underline group-hover:decoration-pen-red/40 underline-offset-4 cursor-pointer"
+                                        >
+                                            {l.title}
+                                        </a>
+                                        <span data-toc-done class="hidden font-sketch text-xs text-pen-green flex items-center gap-1 shrink-0 ml-1" title="completed">
+                                            <span class="text-pen-red">★</span> done
+                                        </span>
+                                        {isInteractive ? (
+                                            <span class="font-sketch text-xs text-pen-green flex items-center gap-1 shrink-0 ml-1" title="has live editor + challenges">
+                                                <span class="inline-block h-1.5 w-1.5 rounded-full bg-pen-green" />
+                                                live
+                                            </span>
+                                        ) : (
+                                            <span class="font-sketch text-xs text-ink-soft/60 italic shrink-0 ml-1" title="reading-only for now — live preview coming soon">
+                                                reading
+                                            </span>
+                                        )}
+                                        <span class="hidden md:inline font-sketch text-base text-ink-soft italic">— {l.subtitle}</span>
+                                        <span class="ml-auto font-sketch text-sm text-ink-soft/70 shrink-0">{l.minutes} min</span>
+                                        {l.badge && <span class="hidden md:inline font-sketch text-sm text-pen-green shrink-0">★ {l.badge}</span>}
+                                    </li>
+                                );
+                            })
+                        }
+                    </ol>
+
+                    <div class="flex items-center gap-5 mt-4">
+                        <RunButton label="▶ Start lesson 1" href={lessonUrl(chapter2.lessons[0])} />
+                        <span class="font-sketch text-base text-ink-soft">
+                            ~36 minutes · earn <span class="text-pen-red">{totalXp("mission-log")} XP</span>
+                        </span>
+                    </div>
+
+                    <div class="absolute bottom-4 right-6 -rotate-3 font-sketch text-base text-ink-soft/60 italic pointer-events-none">
+                        — table of contents —
+                    </div>
+                </div>
+            </article>
+
+            <aside class="space-y-8 lg:pt-10">
+                <Polaroid caption="what you'll build ✦" rotate={2.5}>
+                    <p class="font-sketch text-xs uppercase tracking-wider text-pen-red mb-1">mission log · oct 14</p>
+                    <h3 class="font-title text-[24px] leading-[0.95] text-ink-dark mb-1">Launch day</h3>
+                    <div class="h-16 bg-gradient-to-b from-[#1a1a3e] to-[#3d1d5e] rounded-md mb-2 relative overflow-hidden">
+                        <span class="absolute top-2 right-3 text-yellow-200">★</span>
+                        <span class="absolute top-4 left-4 text-yellow-100 text-xs">★</span>
+                        <span class="absolute bottom-2 left-8 text-orange-300 text-lg">🚀</span>
+                    </div>
+                    <p class="font-hand text-[15px] text-ink-dark/90 leading-snug mb-2">
+                        Ignition at T-0. Apollo 42 cleared the tower in 8 seconds.
+                    </p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <button class="font-sketch text-sm bg-paper-warm border-2 border-pen-red text-pen-red px-2 py-0.5 rounded cursor-pointer">
+                            🚀 hype · 42
+                        </button>
+                        <input
+                            type="text"
+                            placeholder="search…"
+                            class="font-sketch text-sm bg-white border-2 border-ink-dark/15 px-2 py-0.5 rounded flex-1 min-w-0"
+                            disabled
+                        />
+                    </div>
+                </Polaroid>
+
+                <Sticky color="mint" rotate={-2}>
+                    <h3 class="font-title text-[28px] leading-tight text-ink-dark mb-1">what you'll know</h3>
+                    <ul class="font-hand text-[17px] leading-tight text-ink-dark/90 space-y-1">
+                        <li>· shared layouts & slots</li>
+                        <li>· content collections + Markdown</li>
+                        <li>· optimized images</li>
+                        <li>· client islands (when & why)</li>
+                        <li>· API routes + view transitions</li>
+                        <li>· real deployment</li>
+                    </ul>
+                </Sticky>
+
+                <Sticky color="pink" rotate={2.5}>
+                    <h3 class="font-title text-[28px] leading-tight text-ink-dark mb-1">badges to earn</h3>
+                    <ul class="font-hand text-[16px] leading-tight text-ink-dark/90 space-y-1">
+                        {
+                            chapter2.lessons
+                                .filter((l) => l.badge)
+                                .map((l) => (
+                                    <li class="flex items-center gap-2">
+                                        <span class="text-pen-red">★</span>
+                                        <span class="font-title text-[20px]">{l.badge}</span>
+                                        <span class="ml-auto text-sm text-ink-soft">step {l.step}</span>
+                                    </li>
+                                ))
+                        }
+                    </ul>
+                </Sticky>
+
+                <Sticky color="yellow" rotate={-1}>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-sketch text-[13px] text-pen-red uppercase tracking-wider">prerequisites</span>
+                    </div>
+                    <p class="font-hand text-[16px] text-ink-soft leading-tight">
+                        finished <a href="/" class="text-ink-dark underline decoration-pen-red/40 hover:decoration-pen-red">Ch. 1</a>? you have the dashboard. let's grow it.
+                    </p>
+                </Sticky>
+            </aside>
+        </div>
+    </main>
+</NotebookLayout>
+
+<script>
+    import { getProgress } from "~/scripts/progress";
+
+    const state = getProgress();
+    document.querySelectorAll<HTMLElement>("[data-toc-item]").forEach((el) => {
+        const slug = el.getAttribute("data-toc-item")!;
+        if (state.completed.includes(slug)) {
+            const badge = el.querySelector<HTMLElement>("[data-toc-done]");
+            if (badge) {
+                badge.classList.remove("hidden");
+                badge.classList.add("inline-flex");
+            }
+        }
+    });
+</script>

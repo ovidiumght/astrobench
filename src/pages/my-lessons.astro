@@ -1,0 +1,262 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import Sticky from "~/components/Sticky.astro";
+import RunButton from "~/components/RunButton.astro";
+import Marker from "~/components/Marker.astro";
+import { chapter1, chapter2, totalXp, lessonUrl } from "~/lib/lessons";
+
+const allLessons = [
+    { chapter: chapter1, lessons: chapter1.lessons },
+    { chapter: chapter2, lessons: chapter2.lessons },
+];
+
+const allBadges = [...chapter1.lessons, ...chapter2.lessons].filter((l) => l.badge);
+const grandTotalXp = totalXp();
+---
+
+<NotebookLayout title="My lessons" description="Your progress, badges, and where to pick up.">
+    <main class="relative z-10 mx-auto max-w-[1500px] px-8 pb-14">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 items-start">
+            <article class="relative bg-paper-yellow shadow-paper border-2 border-paper-edge rounded-sm overflow-hidden">
+                <span class="absolute -top-3 left-[28%] w-32 h-7 bg-tape border-x border-tape-edge -rotate-2 z-10 pointer-events-none" style="background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"></span>
+                <span class="absolute -top-2 right-[20%] w-24 h-6 bg-marker-pink/55 border-x border-pen-red/25 rotate-3 z-10 pointer-events-none"></span>
+
+                <div class="absolute top-3 left-0 right-0 flex justify-center gap-32 pointer-events-none">
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                </div>
+
+                <div class="relative pl-24 pr-12 pt-16 pb-14 ruled">
+                    <div class="absolute left-[68px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+                    <div class="absolute left-[72px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+
+                    <div class="absolute -left-2 top-12 -rotate-[10deg] font-sketch text-pen-red text-lg leading-tight w-20 text-center pointer-events-none">
+                        <div class="text-xs uppercase tracking-wider">your</div>
+                        <div class="font-title text-2xl leading-none">log</div>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <h1 class="font-title text-[58px] leading-[0.9] text-ink-dark">
+                            My <Marker color="yellow">lessons</Marker>
+                        </h1>
+                    </div>
+
+                    <p class="font-hand text-[20px] leading-[32px] text-ink-dark/90 max-w-[560px] mb-3">
+                        <span data-greeting>welcome back, astronaut.</span>
+                    </p>
+
+                    <p class="font-sketch text-lg text-ink-soft italic max-w-[560px] mb-8">
+                        progress lives in your browser. clear it any time with the reset button below.
+                    </p>
+
+                    <!-- Stat row -->
+                    <div class="grid grid-cols-3 gap-4 mb-8">
+                        <div class="relative bg-white border-2 border-paper-edge/60 px-4 py-3 rounded-sm shadow-code -rotate-1">
+                            <div class="font-sketch text-xs uppercase tracking-wider text-pen-red mb-1">XP earned</div>
+                            <div class="font-title text-[34px] leading-none text-ink-dark">
+                                <span data-xp-earned>0</span>
+                                <span class="font-sketch text-base text-ink-soft">/ {grandTotalXp}</span>
+                            </div>
+                        </div>
+                        <div class="relative bg-white border-2 border-paper-edge/60 px-4 py-3 rounded-sm shadow-code rotate-1">
+                            <div class="font-sketch text-xs uppercase tracking-wider text-pen-red mb-1">lessons done</div>
+                            <div class="font-title text-[34px] leading-none text-ink-dark">
+                                <span data-lessons-done>0</span>
+                                <span class="font-sketch text-base text-ink-soft">/ {chapter1.lessons.length + chapter2.lessons.length}</span>
+                            </div>
+                        </div>
+                        <div class="relative bg-white border-2 border-paper-edge/60 px-4 py-3 rounded-sm shadow-code -rotate-0.5">
+                            <div class="font-sketch text-xs uppercase tracking-wider text-pen-red mb-1">badges</div>
+                            <div class="font-title text-[34px] leading-none text-ink-dark">
+                                <span data-badges-count>0</span>
+                                <span class="font-sketch text-base text-ink-soft">/ {allBadges.length}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resume CTA -->
+                    <div data-resume-block class="mb-10 flex items-center gap-5 flex-wrap">
+                        <RunButton label="▶ Resume" href={lessonUrl(chapter1.lessons[0])} class="lesson-resume-btn" />
+                        <span class="font-sketch text-base text-ink-soft">
+                            picking up at <span data-resume-title class="text-ink-dark">lesson 1: {chapter1.lessons[0].title}</span>
+                        </span>
+                    </div>
+
+                    <!-- Per-chapter progress -->
+                    {
+                        allLessons.map(({ chapter, lessons }) => (
+                            <div class="mb-8">
+                                <div class="flex items-baseline justify-between mb-2">
+                                    <h2 class="font-title text-[28px] text-ink-dark">
+                                        Ch. {chapter.number} · {chapter.shortName}
+                                    </h2>
+                                    <span class="font-sketch text-sm text-ink-soft">
+                                        <span data-chapter-progress={chapter.id}>0</span> / {lessons.length}
+                                    </span>
+                                </div>
+                                <div class="h-1.5 bg-ink-dark/10 rounded-full overflow-hidden mb-3">
+                                    <div
+                                        data-chapter-bar={chapter.id}
+                                        class="h-full bg-pen-green transition-all duration-700 ease-out"
+                                        style="width: 0%"
+                                    />
+                                </div>
+                                <ol class="grid grid-cols-2 gap-x-4">
+                                    {lessons.map((l) => (
+                                        <li class="flex items-baseline gap-2 py-0.5">
+                                            <span
+                                                data-lesson-status={l.slug}
+                                                class="grid h-5 w-5 mt-0.5 shrink-0 place-items-center rounded-full border-2 border-ink-dark/20 text-pen-green text-[12px] font-bold data-[done=true]:bg-pen-green data-[done=true]:border-pen-green data-[done=true]:text-white"
+                                            >
+                                                <span class="opacity-0 data-[parent-done=true]:opacity-100">✓</span>
+                                            </span>
+                                            <span class="font-sketch text-xs text-pen-red w-6 shrink-0">
+                                                {String(l.step).padStart(2, "0")}
+                                            </span>
+                                            <a
+                                                href={lessonUrl(l)}
+                                                class="font-title text-[20px] leading-tight text-ink-dark hover:text-pen-red cursor-pointer decoration-pen-red/0 hover:underline hover:decoration-pen-red/40 underline-offset-4"
+                                            >
+                                                {l.title}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                        ))
+                    }
+
+                    <!-- Reset progress -->
+                    <div class="mt-12 pt-6 border-t border-dashed border-ink-dark/15 flex items-center gap-4 flex-wrap">
+                        <button
+                            type="button"
+                            data-reset-progress
+                            class="font-sketch text-base text-pen-red hover:text-ink-dark cursor-pointer underline decoration-pen-red/40 decoration-dashed underline-offset-4"
+                        >
+                            ↻ reset all progress
+                        </button>
+                        <span class="font-sketch text-sm text-ink-soft italic">
+                            wipes XP, badges, completions, and saved edits.
+                        </span>
+                    </div>
+
+                    <div class="absolute bottom-4 right-6 -rotate-3 font-sketch text-base text-ink-soft/60 italic pointer-events-none">
+                        — your log —
+                    </div>
+                </div>
+            </article>
+
+            <aside class="space-y-8 lg:pt-10">
+                <Sticky color="yellow" rotate={-2}>
+                    <h3 class="font-title text-[28px] leading-tight text-ink-dark mb-2">badges</h3>
+                    <ul class="font-hand text-[16px] leading-tight text-ink-dark/90 space-y-2">
+                        {
+                            allBadges.map((l) => (
+                                <li class="flex items-center gap-2" data-badge-item={l.badge}>
+                                    <span data-badge-icon class="text-ink-dark/30 transition-colors data-[earned=true]:text-pen-red">★</span>
+                                    <span data-badge-name class="font-title text-[18px] text-ink-dark/40 transition-colors data-[earned=true]:text-ink-dark">
+                                        {l.badge}
+                                    </span>
+                                    <span class="ml-auto text-xs text-ink-soft">Ch. {l.chapterId === "astro-101" ? 1 : 2}</span>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </Sticky>
+
+                <Sticky color="mint" rotate={1.5}>
+                    <h3 class="font-title text-[26px] leading-tight text-ink-dark mb-1">how it works</h3>
+                    <p class="font-hand text-[16px] text-ink-dark/90 leading-tight">
+                        Each lesson has a few <Marker>try this →</Marker> tweaks. Make them, and the lesson marks itself complete — that gives you XP and any badge the lesson has.
+                    </p>
+                </Sticky>
+
+                <Sticky color="peach" rotate={-1}>
+                    <h3 class="font-title text-[26px] leading-tight text-ink-dark mb-1">heads up</h3>
+                    <p class="font-hand text-[16px] text-ink-dark/90 leading-tight">
+                        Progress lives in <Marker color="pink">this browser only</Marker>. Open in a new browser, you start fresh. We'll add accounts when there's something worth saving.
+                    </p>
+                </Sticky>
+            </aside>
+        </div>
+    </main>
+</NotebookLayout>
+
+<script>
+    import {
+        getProgress,
+        onProgressChange,
+        resumeUrl,
+        resetProgress,
+        chapterCompletion,
+        type ProgressState,
+    } from "~/scripts/progress";
+    import { findLesson, lessonUrl } from "~/lib/lessons";
+
+    function render(state: ProgressState) {
+        document.querySelector("[data-xp-earned]")!.textContent = String(state.xp);
+        document.querySelector("[data-lessons-done]")!.textContent = String(state.completed.length);
+        document.querySelector("[data-badges-count]")!.textContent = String(state.badges.length);
+
+        document.querySelectorAll<HTMLElement>("[data-lesson-status]").forEach((el) => {
+            const slug = el.getAttribute("data-lesson-status")!;
+            const done = state.completed.includes(slug);
+            el.setAttribute("data-done", done ? "true" : "false");
+            const mark = el.querySelector("span");
+            if (mark) mark.style.opacity = done ? "1" : "0";
+        });
+
+        for (const chapterId of ["astro-101", "mission-log"]) {
+            const c = chapterCompletion(chapterId, state);
+            const txt = document.querySelector(`[data-chapter-progress="${chapterId}"]`);
+            const bar = document.querySelector<HTMLElement>(`[data-chapter-bar="${chapterId}"]`);
+            if (txt) txt.textContent = String(c.done);
+            if (bar) bar.style.width = `${c.pct}%`;
+        }
+
+        document.querySelectorAll<HTMLElement>("[data-badge-item]").forEach((el) => {
+            const name = el.getAttribute("data-badge-item")!;
+            const earned = state.badges.includes(name);
+            el.querySelector("[data-badge-icon]")?.setAttribute("data-earned", earned ? "true" : "false");
+            el.querySelector("[data-badge-name]")?.setAttribute("data-earned", earned ? "true" : "false");
+        });
+
+        const greeting = document.querySelector("[data-greeting]");
+        if (greeting) {
+            if (state.completed.length === 0) {
+                greeting.textContent = "welcome aboard. lesson 1 is right there →";
+            } else if (state.completed.length < 5) {
+                greeting.textContent = `you've got ${state.completed.length} lesson${state.completed.length === 1 ? "" : "s"} under your belt. keep going.`;
+            } else {
+                greeting.textContent = `${state.completed.length} lessons in, ${state.xp} XP earned. nicely flown.`;
+            }
+        }
+
+        const url = resumeUrl(state);
+        const block = document.querySelector<HTMLElement>("[data-resume-block]");
+        const btn = document.querySelector<HTMLAnchorElement>(".lesson-resume-btn");
+        const titleEl = document.querySelector("[data-resume-title]");
+        if (url) {
+            if (btn) btn.setAttribute("href", url);
+            const slug = url.split("/").filter(Boolean).pop()!;
+            const lesson = findLesson(slug);
+            if (lesson && titleEl) {
+                const verb = state.lastLessonSlug ? "picking up at" : "next up:";
+                titleEl.parentElement!.firstChild!.textContent = `${verb} `;
+                titleEl.textContent = `lesson ${lesson.step}: ${lesson.title}`;
+            }
+            if (block) block.classList.remove("hidden");
+        } else {
+            if (block) block.classList.add("hidden");
+        }
+    }
+
+    render(getProgress());
+    onProgressChange(render);
+
+    document.querySelector("[data-reset-progress]")?.addEventListener("click", () => {
+        if (!confirm("Reset all progress? This wipes XP, badges, completed lessons, and your saved edits.")) return;
+        resetProgress();
+    });
+</script>

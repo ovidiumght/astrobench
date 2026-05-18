@@ -1,0 +1,90 @@
+---
+import type { Check } from "~/runtime/checks";
+
+export type ChallengeItem = {
+    id: string;
+    text: string;
+    check: Check;
+    hint?: string;
+};
+
+type Props = {
+    cellId: string;
+    title?: string;
+    completedMessage?: string;
+    items: ChallengeItem[];
+    rotate?: number;
+    /** Optional lesson slug — when all items pass, the lesson is marked complete. */
+    lessonSlug?: string;
+};
+
+const {
+    cellId,
+    title = "challenges",
+    completedMessage = "nice work — all done!",
+    items,
+    rotate = -1.5,
+    lessonSlug,
+} = Astro.props;
+---
+
+<div
+    data-challenge
+    data-challenge-cell={cellId}
+    data-challenge-complete="false"
+    data-lesson-slug={lessonSlug ?? ""}
+    class="relative bg-sticky-peach border border-sticky-peach-edge/60 shadow-sticky inline-block min-w-[300px] max-w-[380px] data-[challenge-complete=true]:bg-sticky-mint data-[challenge-complete=true]:border-sticky-mint-edge/70 transition-colors duration-500"
+    style={`transform:rotate(${rotate}deg)`}
+>
+    <span class="absolute -top-3 left-6 w-14 h-5 bg-tape border-x border-tape-edge -rotate-3 pointer-events-none"></span>
+    <span class="absolute -top-3 right-6 w-14 h-5 bg-tape border-x border-tape-edge rotate-3 pointer-events-none"></span>
+
+    <div class="px-5 py-4">
+        <div class="flex items-baseline justify-between mb-2 gap-2">
+            <h3 class="font-title text-[26px] text-ink-dark leading-none">{title}</h3>
+            <span class="font-sketch text-sm text-ink-soft shrink-0">
+                <span data-challenge-count>0</span> / <span>{items.length}</span>
+            </span>
+        </div>
+
+        <ul class="space-y-2">
+            {
+                items.map((item) => (
+                    <li
+                        data-challenge-item
+                        data-challenge-item-id={item.id}
+                        data-check={JSON.stringify(item.check)}
+                        data-passed="false"
+                        class="flex items-start gap-2 group/item"
+                    >
+                        <span
+                            data-challenge-check
+                            class="grid h-5 w-5 mt-0.5 shrink-0 place-items-center rounded-full border-2 border-ink-dark/25 text-pen-green text-[14px] leading-none font-bold transition-colors group-data-[passed=true]/item:bg-pen-green group-data-[passed=true]/item:border-pen-green group-data-[passed=true]/item:text-white"
+                        >
+                            <span data-challenge-check-mark class="opacity-0 transition-opacity group-data-[passed=true]/item:opacity-100">
+                                ✓
+                            </span>
+                        </span>
+                        <span class="font-hand text-[16px] text-ink-dark/90 leading-tight group-data-[passed=true]/item:line-through group-data-[passed=true]/item:text-ink-soft transition-colors">
+                            <Fragment set:html={item.text} />
+                        </span>
+                    </li>
+                ))
+            }
+        </ul>
+
+        <div
+            data-challenge-aggregate
+            class="mt-3 pt-3 border-t border-dashed border-ink-dark/15 font-sketch text-sm text-ink-soft italic data-[challenge-complete=true]:text-pen-green data-[challenge-complete=true]:not-italic"
+        >
+            <span data-challenge-aggregate-text>keep going…</span>
+            <span data-challenge-aggregate-done class="hidden">
+                <span class="text-pen-red">★</span> {completedMessage}
+            </span>
+        </div>
+    </div>
+</div>
+
+<script>
+    import "~/scripts/challenges";
+</script>

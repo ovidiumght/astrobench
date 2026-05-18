@@ -1,0 +1,102 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, str, tag, open, close, a, expr, comment } from "~/lib/hl";
+
+const lesson = findLesson("09-smooth-as-silk")!;
+
+const layoutCode = `${kw("---")}
+${kw("import")} ${punct("{")} ${ident("ClientRouter")} ${punct("}")} ${kw("from")} ${str("\"astro:transitions\"")}${punct(";")}
+${kw("---")}
+
+${punct("&lt;!doctype html&gt;")}
+${open("html", a("lang", "en"))}
+&nbsp;&nbsp;${open("head")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("ClientRouter")} ${punct("/&gt;")}
+&nbsp;&nbsp;${close("head")}
+&nbsp;&nbsp;${open("body")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("slot")} ${punct("/&gt;")}
+&nbsp;&nbsp;${close("body")}
+${close("html")}`;
+
+const sharedCode = `${comment("// in your crew card:")}
+${open("a", a("href", "{`/crew/${name}`}"))}
+&nbsp;&nbsp;${punct("&lt;")}${tag("img")}${a("src", "{avatar}")} ${a("transition:name", "{`avatar-${name}`}")} ${punct("/&gt;")}
+&nbsp;&nbsp;${open("h2")}${expr(ident("name"))}${close("h2")}
+${close("a")}
+
+${comment("// in the profile page:")}
+${punct("&lt;")}${tag("img")}${a("src", "{avatar}")} ${a("transition:name", "{`avatar-${name}`}")} ${punct("/&gt;")}`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Click between any two pages on your site. Notice the <Marker>blink</Marker>? Browser tears the old page down, builds the new one. Looks like 1998.</p>
+            <p>&nbsp;</p>
+            <p>Add one component to your Layout's <CodeInline color="blue">&lt;head&gt;</CodeInline> and the blink becomes a <Marker color="pink">smooth fade</Marker>:</p>
+        </Prose>
+
+        <CodeCell file="src/layouts/Layout.astro" highlightLine={5} code={layoutCode} />
+
+        <Prose class="mt-4">
+            <p>That's it. Every link click now uses the browser's <CodeInline>navigation</CodeInline> API instead of a full reload. Scroll position is preserved. CSS animates between states. <Marker>The site starts feeling like a product.</Marker></p>
+            <p>&nbsp;</p>
+            <p>For the showstopper move, tag elements that appear on both pages with the same <CodeInline color="purple">transition:name</CodeInline>. They'll <Marker color="pink">morph</Marker> between routes:</p>
+        </Prose>
+
+        <CodeCell file="across two files" code={sharedCode} />
+
+        <Prose class="mt-4">
+            <p>An astronaut's avatar on the crew page <span class="italic">flies into position</span> on their profile page. Click around your site. You earned that smile.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="page 9 ✦ before & after" rotate={-2}>
+                <div class="space-y-3">
+                    <div class="bg-white border border-ink-dark/15 rounded-md p-2">
+                        <div class="text-[9px] text-pen-red font-sketch uppercase mb-1">before · 80ms blink</div>
+                        <div class="flex gap-1">
+                            <div class="flex-1 bg-paper-warm h-8 rounded"></div>
+                            <div class="flex-1 bg-white h-8 rounded"></div>
+                            <div class="flex-1 bg-paper-warm h-8 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-pen-green/40 rounded-md p-2">
+                        <div class="text-[9px] text-pen-green font-sketch uppercase mb-1">after · 200ms fade</div>
+                        <div class="flex gap-1">
+                            <div class="flex-1 bg-gradient-to-r from-paper-warm via-paper-yellow to-paper-warm h-8 rounded"></div>
+                            <div class="flex-1 bg-gradient-to-r from-paper-yellow via-white to-paper-yellow h-8 rounded"></div>
+                            <div class="flex-1 bg-gradient-to-r from-paper-warm via-paper-yellow to-paper-warm h-8 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">one line of code.</p>
+            </Polaroid>
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">Free side effects</h3>
+                <ul class="font-hand text-[16px] text-ink-dark/90 space-y-1 leading-tight">
+                    <li>· no blank-flash between pages</li>
+                    <li>· scroll position preserved</li>
+                    <li>· prefetching on hover</li>
+                    <li>· back/forward feels instant</li>
+                </ul>
+            </Sticky>
+
+            <Sticky color="mint" rotate={-1.5}>
+                <h3 class="font-title text-[22px] text-ink-dark leading-none mb-1">Heads up</h3>
+                <p class="font-hand text-[15px] text-ink-dark/90 leading-tight">
+                    Scripts in your pages need <CodeInline color="red">astro:page-load</CodeInline> instead of <CodeInline>DOMContentLoaded</CodeInline>. <Marker>One catch</Marker>, easy fix.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

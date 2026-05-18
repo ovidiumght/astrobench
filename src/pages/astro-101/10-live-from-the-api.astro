@@ -1,0 +1,147 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+
+const lesson = findLesson("10-live-from-the-api")!;
+
+const code = `---
+import Card from "~/components/Card.astro";
+
+const res = await fetch("/api/crew");
+const crew = await res.json();
+---
+
+<h2>{crew.length} astronauts on shift</h2>
+<div class="grid">
+    {crew.map(a => <Card {...a} />)}
+</div>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "rename-heading",
+        text: "change the <code>&lt;h2&gt;</code> wording (keep the <code>{crew.length}</code>)",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceMatches", pattern: "\\{\\s*crew\\.length\\s*\\}" },
+                { kind: "sourceNotMatches", pattern: "<h2[^>]*>\\s*\\{\\s*crew\\.length\\s*\\}\\s*astronauts\\s+on\\s+shift\\s*</h2>" },
+            ],
+        },
+    },
+    {
+        id: "filter-crew",
+        text: "filter the list — only show astronauts where <code>status === \"orbit\"</code>",
+        check: {
+            kind: "any",
+            checks: [
+                { kind: "sourceMatches", pattern: "crew\\.filter\\s*\\([\\s\\S]*?status\\s*===?\\s*['\"]orbit['\"]" },
+                { kind: "sourceMatches", pattern: "filter\\s*\\(\\s*\\w+\\s*=>\\s*\\w+\\.status\\s*===?\\s*['\"]orbit['\"]" },
+            ],
+        },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Stop hardcoding. <Marker>Real astronauts</Marker> have a real API.</p>
+            <p>&nbsp;</p>
+            <p>Astro's secret: the frontmatter runs <span class="italic">on the server</span> when the page is built. That means you can <CodeInline color="red">await fetch(...)</CodeInline> at the top — just like a Node script.</p>
+            <p>&nbsp;</p>
+            <p>No "loading state" needed. By the time anyone visits, the data is baked into the HTML.</p>
+            <p>&nbsp;</p>
+            <p>The cell below is already calling a (stubbed) <CodeInline>/api/crew</CodeInline> and rendering whatever it returns. <Marker color="pink">Tweak it</Marker> — change the headline, filter the list.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l10"
+            file="src/pages/index.astro"
+            note="now live"
+            code={code}
+            minHeight={300}
+        />
+
+        <Prose class="mt-4">
+            <p>Same template, six cards, <Marker color="pink">zero edits</Marker> when Mission Control adds another astronaut. <span class="italic">That's the whole pipeline.</span></p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l10" caption="page 10 ✦ live · 6 astronauts" rotate={-2} frameHeight={420} />
+
+            <Challenge cellId="ch1-l10" lessonSlug={lesson.slug} title="try this →" completedMessage="★ data piper unlocked!" items={challenges} rotate={1.5} />
+
+            <Sticky color="yellow" rotate={2}>
+                <h3 class="font-title text-[24px] text-ink-dark leading-none mb-2">Build time vs runtime</h3>
+                <p class="font-hand text-[16px] text-ink-dark/90 leading-tight mb-2">
+                    Frontmatter fetches happen <Marker color="pink">when the page is built</Marker>. Your visitor downloads pure HTML — fast, cached, no spinner.
+                </p>
+                <p class="font-sketch text-sm text-ink-soft italic">(in Chapter 2 we'll add things that update after the page loads.)</p>
+            </Sticky>
+
+            <Sticky color="blue" rotate={-1.5}>
+                <h4 class="font-title text-[22px] leading-tight text-ink-dark mb-1">the stub</h4>
+                <p class="font-hand text-[15px] text-ink-soft leading-tight">
+                    Astrobench intercepts <CodeInline>fetch(...)</CodeInline> in the sandbox and replies with a tiny canned crew. In a real project, your real API answers.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    import { registerCell } from "~/runtime/registry";
+
+    const escape = (s: unknown) =>
+        String(s ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+    type Astronaut = { name: string; mission: string; status?: string };
+    const mockCrew: Astronaut[] = [
+        { name: "Mae", mission: "Endeavour", status: "orbit" },
+        { name: "Ovidiu", mission: "Apollo 42", status: "orbit" },
+        { name: "Sergei", mission: "Soyuz 11", status: "earth" },
+        { name: "Yui", mission: "Hayabusa 3", status: "orbit" },
+        { name: "Aki", mission: "Selene", status: "earth" },
+        { name: "Tom", mission: "Apollo 11", status: "earth" },
+    ];
+
+    const sandboxFetch = async (_url: string) => ({
+        async json() {
+            return mockCrew;
+        },
+    });
+
+    registerCell("ch1-l10", {
+        components: {
+            Card: (props) => {
+                const status = String(props.status ?? "");
+                const badge =
+                    status === "orbit"
+                        ? '<span style="color:#6dffaf;">🚀</span>'
+                        : status === "earth"
+                        ? '<span style="color:#ffd966;">🌍</span>'
+                        : "";
+                return `<div class="card"><h1>${escape(props.name)}</h1><p>${badge} ${escape(props.mission)}</p></div>`;
+            },
+        },
+        scope: { fetch: sandboxFetch },
+        baseStyles: `
+            body { display: flex; flex-direction: column; gap: 6px; }
+            .card { background: #0d0b2e; color: #fef3c7; padding: 8px 12px; border-radius: 8px; font-family: system-ui; }
+            .card h1 { font-size: 16px; line-height: 1.1; margin: 0 0 2px; font-weight: bold; }
+            .card p { font-size: 12px; margin: 0; opacity: 0.85; display:flex; gap:6px; align-items:center; }
+        `,
+    });
+</script>

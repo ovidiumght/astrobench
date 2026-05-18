@@ -1,0 +1,17 @@
+---
+type Props = {
+    color?: "yellow" | "pink" | "green";
+    class?: string;
+};
+
+const { color = "yellow", class: cls = "" } = Astro.props;
+const bg = {
+    yellow: "bg-marker-yellow/70",
+    pink: "bg-marker-pink/70",
+    green: "bg-marker-green/70",
+}[color];
+---
+
+<span class:list={[bg, "px-1 -mx-1", cls]}>
+    <slot />
+</span>

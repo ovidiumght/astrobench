@@ -1,0 +1,11 @@
+---
+type Props = {
+    class?: string;
+};
+
+const { class: cls = "" } = Astro.props;
+---
+
+<div class:list={["font-hand text-[20px] leading-[32px] text-ink-dark/90 space-y-0 max-w-[580px] [&_p:empty]:min-h-[32px]", cls]}>
+    <slot />
+</div>

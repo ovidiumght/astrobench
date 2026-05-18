@@ -1,0 +1,117 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+
+const lesson = findLesson("06-status-check")!;
+
+const code = `---
+const { name, mission, status } = Astro.props;
+---
+
+<div class="card">
+    <h1>{name}</h1>
+    <p>{mission}</p>
+    <p class="badge">
+        {status === "orbit" ? "🚀 In orbit" : "🌍 Earth-side"}
+    </p>
+</div>
+
+<style>
+    .card {
+        background: #0d0b2e;
+        color: #fef3c7;
+        padding: 1rem 1.25rem;
+        border-radius: 10px;
+        font-family: system-ui;
+    }
+    .card h1 { font-size: 22px; margin: 0 0 4px; }
+    .card p { font-size: 14px; margin: 0; }
+    .badge { margin-top: 6px; opacity: 0.9; }
+</style>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "change-emojis",
+        text: "swap the emojis — anything but 🚀 and 🌍",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceNotMatches", pattern: "🚀\\s*In\\s*orbit" },
+                { kind: "sourceMatches", pattern: "<p[^>]*class\\s*=\\s*\"badge\"" },
+            ],
+        },
+    },
+    {
+        id: "change-label",
+        text: "rename the labels (not <code>In orbit</code> / <code>Earth-side</code>)",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceNotMatches", pattern: "In\\s*orbit" },
+                { kind: "sourceNotMatches", pattern: "Earth-side" },
+            ],
+        },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Astronauts have <Marker>states</Marker>: in orbit, earth-side, on EVA. The card already knows the difference.</p>
+            <p>&nbsp;</p>
+            <p>You don't need a full <CodeInline color="red">if</CodeInline> block — JSX-style templates let you drop a <span class="italic">ternary</span> right where the text goes: <CodeInline>{`{cond ? a : b}`}</CodeInline>.</p>
+            <p>&nbsp;</p>
+            <p>The preview feeds <CodeInline highlight>{`{ name: "Mae", mission: "Endeavour", status: "orbit" }`}</CodeInline>. <Marker color="pink">Tweak the branches</Marker> — change the labels, swap the emojis.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l6"
+            file="src/components/Card.astro"
+            note="now smarter"
+            code={code}
+            minHeight={420}
+        />
+
+        <Prose class="mt-4">
+            <p>One component, two looks. <Marker color="pink">Data decides.</Marker></p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l6" caption="page 6 ✦ status: orbit" rotate={-2} frameHeight={160} />
+
+            <Challenge cellId="ch1-l6" lessonSlug={lesson.slug} title="try this →" completedMessage="★ branching unlocked!" items={challenges} rotate={1.5} />
+
+            <Sticky color="yellow" rotate={2}>
+                <h3 class="font-title text-[24px] text-ink-dark leading-none mb-2">Tricks</h3>
+                <ul class="font-hand text-[16px] text-ink-dark/90 space-y-1 leading-tight">
+                    <li><CodeInline>{`{a ? b : c}`}</CodeInline> — ternary</li>
+                    <li><CodeInline>{`{a && b}`}</CodeInline> — show only if true</li>
+                    <li><CodeInline>{`{a ?? b}`}</CodeInline> — fallback if missing</li>
+                </ul>
+            </Sticky>
+
+            <Sticky color="blue" rotate={-1.5}>
+                <h4 class="font-title text-[22px] leading-tight text-ink-dark mb-1">target snippet</h4>
+                <pre class="font-type text-[12px] text-ink-navy leading-snug whitespace-pre overflow-x-auto">{`{status === "orbit"
+  ? "🚀 In orbit"
+  : "🌍 Earth-side"}`}</pre>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    import { registerCell } from "~/runtime/registry";
+    registerCell("ch1-l6", {
+        props: { name: "Mae", mission: "Endeavour", status: "orbit" },
+    });
+</script>

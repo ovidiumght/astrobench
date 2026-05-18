@@ -1,0 +1,172 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, expr, str, tag, comment, open, close, a, num, string } from "~/lib/hl";
+
+const lesson = findLesson("05-first-island")!;
+
+const islandCode = `${kw("import")} ${punct("{")} ${ident("useState")} ${punct("}")} ${kw("from")} ${str("\"preact/hooks\"")}${punct(";")}
+
+${kw("export default function")} ${ident("Hype")}${punct("({")} ${ident("initial")} ${punct("})")} ${punct("{")}
+&nbsp;&nbsp;${kw("const")} ${punct("[")}${ident("count")}${punct(",")} ${ident("setCount")}${punct("] =")} ${ident("useState")}${punct("(")}${ident("initial")}${punct(");")}
+
+&nbsp;&nbsp;${kw("return")} ${punct("(")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("button")} ${ident("onClick")}${punct("={() =&gt;")} ${ident("setCount")}${punct("(")}${ident("count")} ${punct("+")} ${num("1")}${punct(")}")}${punct("&gt;")}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🚀 hype · ${expr(ident("count"))}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;/")}${tag("button")}${punct("&gt;")}
+&nbsp;&nbsp;${punct(");")}
+${punct("}")}`;
+
+const useCode = `${kw("---")}
+${kw("import")} ${ident("Layout")} ${kw("from")} ${str("\"~/layouts/Layout.astro\"")}${punct(";")}
+${kw("import")} ${ident("Hype")} ${kw("from")} ${str("\"~/components/Hype.tsx\"")}${punct(";")}
+${kw("---")}
+
+${punct("&lt;")}${tag("Layout")}${a("title", "Launch day")}${punct("&gt;")}
+&nbsp;&nbsp;${open("article")}
+&nbsp;&nbsp;&nbsp;&nbsp;${open("h1")}Launch day${close("h1")}
+&nbsp;&nbsp;&nbsp;&nbsp;${open("p")}Ignition at T-0. Apollo 42 cleared the tower.${close("p")}
+
+&nbsp;&nbsp;&nbsp;&nbsp;${comment("// this one bit becomes interactive ↓")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("Hype")}${a("initial", "{42}")} ${a("client:load")} ${punct("/&gt;")}
+&nbsp;&nbsp;${close("article")}
+${punct("&lt;/")}${tag("Layout")}${punct("&gt;")}`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>So far <Marker>zero</Marker> JavaScript ships to your visitors. That's a feature. But sometimes you genuinely <span class="italic">need</span> interactivity — a button, a counter, a toggle.</p>
+            <p>&nbsp;</p>
+            <p>This is the <Marker color="pink">islands</Marker> moment. Write the interactive bit in <CodeInline>React</CodeInline>, <CodeInline>Vue</CodeInline>, <CodeInline>Svelte</CodeInline>, <CodeInline>Preact</CodeInline>, or <CodeInline>Solid</CodeInline> — whatever you like. Drop it into an Astro page. Add <CodeInline highlight>client:load</CodeInline>. Done.</p>
+            <p>&nbsp;</p>
+            <p>The rest of the page stays static HTML. Only the island hydrates.</p>
+        </Prose>
+
+        <CodeCell file="src/components/Hype.tsx" note="a Preact component" code={islandCode} />
+
+        <Prose class="mt-4">
+            <p>Now use it on your log page — just like a regular <CodeInline>.astro</CodeInline> component, but with a <CodeInline color="red">client:load</CodeInline> directive:</p>
+        </Prose>
+
+        <CodeCell file="src/pages/logs/launch-day.astro" highlightLine={9} code={useCode} />
+
+        <Prose class="mt-4">
+            <p>Click the button. The number goes up. <Marker color="pink">Real JavaScript in the browser.</Marker></p>
+            <p>&nbsp;</p>
+            <p>The page itself is still server-rendered HTML — the article text, the layout, the header. Only the hype button ships a JS bundle. <Marker>That's the whole islands idea.</Marker></p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="page 5 ✦ ★ unlocked: island hopper" rotate={2.5}>
+                <div class="bg-white border border-ink-dark/15 rounded-md font-[system-ui] px-3 py-3">
+                    <h2 class="text-[14px] font-bold mb-1 text-ink-dark leading-tight">Launch day</h2>
+                    <p class="text-[10px] text-ink-dark/85 mb-3 leading-snug">
+                        Ignition at <strong>T-0</strong>. Apollo 42 cleared the tower.
+                    </p>
+                    <button
+                        type="button"
+                        data-hype-btn
+                        data-initial="42"
+                        class="font-sketch text-sm bg-paper-warm border-2 border-pen-red text-pen-red px-3 py-1 rounded cursor-pointer hover:bg-pen-red/10 active:scale-95 transition-all"
+                    >
+                        🚀 hype · <span data-hype-count>42</span>
+                    </button>
+                    <p
+                        data-hype-toast
+                        class="text-[9px] text-pen-green mt-1 font-sketch italic opacity-0 transition-opacity duration-200"
+                    >
+                        click to hype.
+                    </p>
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">first JS on the page.</p>
+            </Polaroid>
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "components/",
+                            children: [
+                                { name: "Card.astro" },
+                                { name: "Hype.tsx", isNew: true, note: "a Preact component" },
+                            ],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">One setup step</h3>
+                <p class="font-hand text-[16px] text-ink-dark/90 leading-tight mb-2">
+                    Run once to install Preact:
+                </p>
+                <p class="font-type text-[13px] text-ink-navy bg-paper-warm/80 px-2 py-1 rounded">
+                    npx astro add preact
+                </p>
+                <p class="font-sketch text-sm text-ink-soft italic mt-2">
+                    Astro updates your config. You don't.
+                </p>
+            </Sticky>
+
+            <Sticky color="peach" rotate={-1.5}>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-sketch text-[13px] text-pen-red uppercase tracking-wider">★ unlocked!</span>
+                </div>
+                <h4 class="font-title text-[26px] leading-tight text-ink-dark">Island Hopper</h4>
+                <p class="font-hand text-[16px] text-ink-soft leading-tight">+100 XP · first client-side JS</p>
+            </Sticky>
+
+            <Sticky color="mint" rotate={2}>
+                <h3 class="font-title text-[22px] text-ink-dark leading-none mb-1">Why "island"?</h3>
+                <p class="font-hand text-[15px] text-ink-dark/90 leading-tight">
+                    The page is a sea of static HTML. Each <CodeInline color="red">client:*</CodeInline> directive is an island of JavaScript. Visitors only download the bundles for the islands on <span class="italic">that</span> page.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    /*
+     * The polaroid mock-up of the Hype island. We don't ship a real React/Preact
+     * runtime on the lesson page — it's just a stylized preview — but the
+     * counter ought to count when clicked. Vanilla JS keeps the page weightless.
+     */
+    const btn = document.querySelector<HTMLButtonElement>("[data-hype-btn]");
+    const countEl = document.querySelector<HTMLElement>("[data-hype-count]");
+    const toast = document.querySelector<HTMLElement>("[data-hype-toast]");
+
+    // Idempotency guard: this <script> can re-run during dev HMR (and during
+    // Astro view transitions), which would attach a fresh listener every time
+    // and make each click count more than once.
+    if (btn && countEl && toast && !btn.dataset.wired) {
+        btn.dataset.wired = "1";
+        const initial = Number(btn.dataset.initial ?? "42");
+        let count = initial;
+        let toastTimer: number | undefined;
+
+        btn.addEventListener("click", () => {
+            count += 1;
+            countEl.textContent = String(count);
+            toast.textContent = count === initial + 1 ? "just clicked." : "hype rising.";
+            toast.style.opacity = "1";
+
+            if (toastTimer) window.clearTimeout(toastTimer);
+            toastTimer = window.setTimeout(() => {
+                toast.style.opacity = "0";
+            }, 1400);
+        });
+    }
+</script>

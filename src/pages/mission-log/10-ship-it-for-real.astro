@@ -1,0 +1,186 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import RunButton from "~/components/RunButton.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, str, comment, string } from "~/lib/hl";
+
+const lesson = findLesson("10-ship-it-for-real")!;
+
+const configCode = `${kw("import")} ${punct("{")} ${ident("defineConfig")} ${punct("}")} ${kw("from")} ${str("\"astro/config\"")}${punct(";")}
+${kw("import")} ${ident("vercel")} ${kw("from")} ${str("\"@astrojs/vercel\"")}${punct(";")}
+
+${kw("export default")} ${ident("defineConfig")}${punct("({")}
+&nbsp;&nbsp;${ident("output")}${punct(":")} ${string("static")}${punct(",")}  ${comment("// or 'server' for full SSR")}
+&nbsp;&nbsp;${ident("adapter")}${punct(":")} ${ident("vercel")}${punct("(),")}
+&nbsp;&nbsp;${ident("site")}${punct(":")} ${string("https://mission-control.vercel.app")}${punct(",")}
+${punct("});")}`;
+
+const cliCode = `${comment("# add the adapter")}
+${ident("npx")} astro add vercel
+
+${comment("# deploy to production (Vercel builds for you)")}
+${ident("vercel")} ${punct("--")}prod`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Look back. Ten lessons in Chapter 2. A layout. A content collection with five logs. An <CodeInline color="blue">&lt;Image&gt;</CodeInline>-optimized photo. A hype button. A search island. An API endpoint. View transitions.</p>
+            <p>&nbsp;</p>
+            <p>One thing left. <Marker color="pink">Make it real.</Marker></p>
+        </Prose>
+
+        <CodeCell file="astro.config.mjs" note="add the adapter" highlightLine={5} code={configCode} />
+
+        <Prose class="mt-4">
+            <p>The <CodeInline>adapter</CodeInline> tells Astro <Marker>where</Marker> it's going to live. Each provider has one — <CodeInline>@astrojs/vercel</CodeInline>, <CodeInline>@astrojs/netlify</CodeInline>, <CodeInline>@astrojs/cloudflare</CodeInline>, <CodeInline>@astrojs/node</CodeInline> for your own server.</p>
+            <p>&nbsp;</p>
+            <p>Two commands, in your terminal:</p>
+        </Prose>
+
+        <CodeCell file="terminal" code={cliCode} />
+
+        <Prose class="mt-4">
+            <p>First run asks you to <CodeInline>vercel login</CodeInline> and link the folder to a project. After that, every <CodeInline>vercel --prod</CodeInline> ships a build.</p>
+            <p>&nbsp;</p>
+            <p>Or skip the CLI entirely: push to GitHub, import the repo in Vercel's dashboard, and every <CodeInline>git push</CodeInline> deploys. <Marker color="pink">Free, automatic, forever.</Marker></p>
+            <p>&nbsp;</p>
+            <p>Add a custom domain in the dashboard. Point DNS at Vercel. Mission Log goes live.</p>
+        </Prose>
+
+        <div class="relative my-8 max-w-[640px]">
+            <span class="absolute -top-3 left-10 w-24 h-6 bg-tape border-x border-tape-edge -rotate-2 z-10 pointer-events-none"></span>
+            <span class="absolute -top-3 right-12 w-24 h-6 bg-tape border-x border-tape-edge rotate-2 z-10 pointer-events-none"></span>
+
+            <div class="bg-white border-2 border-ink-dark/12 shadow-code rounded-sm p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="grid h-5 w-5 place-items-center rounded-full bg-pen-green text-white font-pixel text-sm leading-none">✓</span>
+                    <span class="font-title text-[24px] text-ink-dark leading-none">deployed to production</span>
+                </div>
+
+                <p class="font-sketch text-base text-ink-soft mb-3">your real, live URL:</p>
+
+                <div class="bg-paper-warm border-2 border-dashed border-pen-red/40 px-4 py-3 mb-4">
+                    <p class="font-type text-[16px] text-ink-navy break-all">
+                        https://<span class="text-pen-red">mission-log</span>.vercel.app
+                    </p>
+                </div>
+
+                <p class="font-sketch text-sm text-ink-soft mb-3">final feature checklist:</p>
+                <ul class="font-type text-[13px] text-ink-navy mb-4 space-y-1">
+                    <li>· <span class="text-pen-green">✓</span> shared layout, no duplication</li>
+                    <li>· <span class="text-pen-green">✓</span> 4 markdown logs, typed</li>
+                    <li>· <span class="text-pen-green">✓</span> images, optimized to webp</li>
+                    <li>· <span class="text-pen-green">✓</span> hype button (real JS)</li>
+                    <li>· <span class="text-pen-green">✓</span> API endpoint + search</li>
+                    <li>· <span class="text-pen-green">✓</span> smooth page transitions</li>
+                </ul>
+
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button class="font-sketch text-base bg-pen-green/15 border-2 border-pen-green text-pen-green px-3 py-1.5 rounded cursor-pointer">copy link</button>
+                    <button class="font-sketch text-base bg-pen-blue/15 border-2 border-pen-blue text-pen-blue px-3 py-1.5 rounded cursor-pointer">share on bsky</button>
+                    <button class="font-sketch text-base bg-pen-red/15 border-2 border-pen-red text-pen-red px-3 py-1.5 rounded cursor-pointer">add to portfolio</button>
+                </div>
+            </div>
+        </div>
+
+        <Prose class="mt-4">
+            <p>Two chapters. Twenty lessons. <Marker>One real website.</Marker></p>
+            <p>&nbsp;</p>
+            <p>You started by editing <CodeInline>Hello, world!</CodeInline>. You ended with a content-driven, image-optimized, partially-hydrated, view-transitioning, deploy-on-push site.</p>
+            <p>&nbsp;</p>
+            <p>Send Mission Control the URL. <Marker color="pink">They'll be jealous.</Marker></p>
+        </Prose>
+
+        <div class="mt-8 flex flex-wrap gap-3 items-center">
+            <RunButton label="🎉 finish Chapter 2" href="/mission-log/" />
+            <a href="/" class="font-sketch text-lg text-ink-soft hover:text-ink-dark px-3 py-1.5 cursor-pointer">back to Ch. 1</a>
+        </div>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="✦ ★ Captain unlocked" rotate={3}>
+                <div class="bg-gradient-to-b from-[#1a1a3e] to-[#3d1d5e] text-[#fef3c7] rounded-md p-3 font-[system-ui] relative overflow-hidden">
+                    <span class="absolute top-2 right-2 text-yellow-200 text-xs">★</span>
+                    <p class="text-[9px] uppercase tracking-wider text-[#ffd966] mb-1">YOUR SITE · LIVE</p>
+                    <p class="text-[12px] font-bold mb-1">Mission Log</p>
+                    <p class="text-[9px] opacity-75 mb-2">4 entries · 1 hype button · 1 search</p>
+                    <div class="space-y-1">
+                        {
+                            [
+                                "Launch day",
+                                "First EVA",
+                                "Halfway home",
+                                "Splashdown",
+                            ].map((title) => (
+                                <div class="bg-[#1f1b3d] rounded px-2 py-1 text-[9px] flex justify-between">
+                                    <span class="font-bold">{title}</span>
+                                    <span class="opacity-50">→</span>
+                                </div>
+                            ))
+                        }
+                    </div>
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">mission-log.vercel.app</p>
+            </Polaroid>
+
+            <FileTree
+                title="src/ — final form"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        { name: "assets/" },
+                        {
+                            name: "components/",
+                            children: [{ name: "Card.astro" }, { name: "Hype.tsx" }, { name: "Search.tsx" }],
+                        },
+                        {
+                            name: "content/",
+                            children: [{ name: "logs/", note: "4 markdown files" }],
+                        },
+                        { name: "content.config.ts" },
+                        {
+                            name: "layouts/",
+                            children: [{ name: "Layout.astro" }],
+                        },
+                        {
+                            name: "pages/",
+                            children: [
+                                { name: "index.astro" },
+                                { name: "about.astro" },
+                                { name: "crew/[name].astro" },
+                                { name: "logs/" },
+                                { name: "api/logs.json.ts" },
+                            ],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="mint" rotate={-2}>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-sketch text-[13px] text-pen-red uppercase tracking-wider">★ chapter 2 complete!</span>
+                </div>
+                <h4 class="font-title text-[26px] leading-tight text-ink-dark">Captain</h4>
+                <p class="font-hand text-[16px] text-ink-soft leading-tight">+130 XP · ~860 in Ch. 2 · ~1565 total</p>
+            </Sticky>
+
+            <Sticky color="peach" rotate={2}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">What's next?</h3>
+                <ul class="font-hand text-[17px] text-ink-dark/90 space-y-1 leading-tight">
+                    <li>· write your own tutorial</li>
+                    <li>· fork another astronaut's notebook</li>
+                    <li>· <span class="text-pen-red italic">Ch. 3: forms, DBs, auth</span></li>
+                </ul>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

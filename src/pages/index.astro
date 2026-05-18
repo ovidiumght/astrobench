@@ -1,0 +1,222 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import RunButton from "~/components/RunButton.astro";
+import Marker from "~/components/Marker.astro";
+import { chapter1, chapter2, totalXp, lessonUrl } from "~/lib/lessons";
+
+const ch2First = chapter2.lessons[0];
+const ch1Minutes = chapter1.lessons.reduce((sum, l) => sum + l.minutes, 0);
+---
+
+<NotebookLayout title="Astro 101: Mission Control" description="Build and publish a live astronaut dashboard, one lesson at a time.">
+    <main class="relative z-10 mx-auto max-w-[1500px] px-8 pb-14">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 items-start">
+            <article class="relative bg-paper-yellow shadow-paper border-2 border-paper-edge rounded-sm overflow-hidden">
+                <span class="absolute -top-3 left-[28%] w-32 h-7 bg-tape border-x border-tape-edge -rotate-2 z-10 pointer-events-none" style="background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"></span>
+                <span class="absolute -top-2 right-[20%] w-24 h-6 bg-marker-pink/55 border-x border-pen-red/25 rotate-3 z-10 pointer-events-none"></span>
+
+                <div class="absolute top-3 left-0 right-0 flex justify-center gap-32 pointer-events-none">
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                    <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                </div>
+
+                <div class="relative pl-24 pr-12 pt-16 pb-14 ruled">
+                    <div class="absolute left-[68px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+                    <div class="absolute left-[72px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+
+                    <div class="absolute -left-2 top-12 -rotate-[10deg] font-sketch text-pen-red text-lg leading-tight w-20 text-center pointer-events-none">
+                        <div class="text-xs uppercase tracking-wider">ch.</div>
+                        <div class="text-3xl leading-none">1</div>
+                    </div>
+
+                    <div class="relative mb-2">
+                        <h1 class="font-title text-[58px] leading-[0.9] text-ink-dark">
+                            Astro 101:
+                            <br />
+                            <Marker color="yellow">Mission Control</Marker>
+                        </h1>
+                    </div>
+
+                    <p class="font-hand text-[20px] leading-[32px] text-ink-dark/90 max-w-[560px] mb-3">
+                        {chapter1.tagline}
+                    </p>
+
+                    <p class="font-sketch text-lg text-ink-soft italic max-w-[560px] mb-10">
+                        no setup, no signup. just write, run, and ship.
+                    </p>
+
+                    <h2 class="font-title text-[34px] text-ink-dark mb-2">contents</h2>
+
+                    <ol class="space-y-1 max-w-[640px] mb-10">
+                        {
+                            chapter1.lessons.map((l) => {
+                                const isInteractive = l.step !== 11;
+                                return (
+                                    <li class="group flex items-baseline gap-3 py-1" data-toc-item={l.slug}>
+                                        <span class="font-sketch text-base text-pen-red w-7 shrink-0">
+                                            {String(l.step).padStart(2, "0")}.
+                                        </span>
+                                        <a href={`/astro-101/${l.slug}`} class="font-title text-[26px] leading-tight text-ink-dark group-hover:text-pen-red transition-colors decoration-pen-red/0 group-hover:underline group-hover:decoration-pen-red/40 underline-offset-4 cursor-pointer">
+                                            {l.title}
+                                        </a>
+                                        <span data-toc-done class="hidden font-sketch text-xs text-pen-green flex items-center gap-1 shrink-0 ml-1" title="completed">
+                                            <span class="text-pen-red">★</span> done
+                                        </span>
+                                        {isInteractive ? (
+                                            <span class="font-sketch text-xs text-pen-green flex items-center gap-1 shrink-0 ml-1" title="has live editor + challenges">
+                                                <span class="inline-block h-1.5 w-1.5 rounded-full bg-pen-green" />
+                                                live
+                                            </span>
+                                        ) : (
+                                            <span class="font-sketch text-xs text-ink-soft/60 italic shrink-0 ml-1" title="reading-only — wraps up the chapter">
+                                                wrap-up
+                                            </span>
+                                        )}
+                                        <span class="hidden md:inline font-sketch text-base text-ink-soft italic">
+                                            — {l.subtitle}
+                                        </span>
+                                        <span class="ml-auto font-sketch text-sm text-ink-soft/70 shrink-0">
+                                            {l.minutes} min
+                                        </span>
+                                        {l.badge && (
+                                            <span class="hidden md:inline font-sketch text-sm text-pen-green shrink-0">
+                                                ★ {l.badge}
+                                            </span>
+                                        )}
+                                    </li>
+                                );
+                            })
+                        }
+                    </ol>
+
+                    <div class="flex items-center gap-5 mt-4" data-start-block>
+                        <RunButton
+                            label="▶ Start lesson 1"
+                            href={`/astro-101/${chapter1.lessons[0].slug}`}
+                            class="lesson-start-btn"
+                        />
+                        <span class="font-sketch text-base text-ink-soft" data-start-meta>
+                            ~{ch1Minutes} minutes · earn <span class="text-pen-red">{totalXp("astro-101")} XP</span>
+                        </span>
+                    </div>
+
+                    <a
+                        href={lessonUrl(ch2First)}
+                        class="group relative mt-10 -mx-2 block rounded-md border-2 border-dashed border-pen-red/35 bg-gradient-to-r from-sticky-peach/40 via-paper-yellow/0 to-sticky-mint/40 px-5 py-4 cursor-pointer hover:border-pen-red/70 hover:from-sticky-peach/70 hover:to-sticky-mint/70 transition-colors"
+                    >
+                        <div class="flex items-center gap-4 flex-wrap">
+                            <span class="font-sketch text-[12px] uppercase tracking-[0.22em] text-pen-red">
+                                when you finish chapter 1 →
+                            </span>
+                            <div class="flex-1 min-w-[200px]">
+                                <div class="font-title text-[26px] leading-tight text-ink-dark group-hover:text-pen-red transition-colors">
+                                    Ch. 2 · {chapter2.shortName}
+                                </div>
+                                <div class="font-hand text-[16px] text-ink-soft leading-tight">
+                                    {chapter2.tagline}
+                                </div>
+                            </div>
+                            <span class="font-title text-[28px] text-pen-red group-hover:translate-x-1 transition-transform">
+                                →
+                            </span>
+                        </div>
+                    </a>
+
+                    <div class="absolute bottom-4 right-6 -rotate-3 font-sketch text-base text-ink-soft/60 italic pointer-events-none">
+                        — table of contents —
+                    </div>
+                </div>
+            </article>
+
+            <aside class="space-y-8 lg:pt-10">
+                <Polaroid caption="what you'll build ✦" rotate={2.5}>
+                    <p class="font-sketch text-xs uppercase tracking-wider text-pen-red mb-1">mission control</p>
+                    <h3 class="font-title text-[28px] leading-[0.95] text-ink-dark mb-2">live crew status</h3>
+                    <ul class="space-y-1 font-hand text-[16px] text-ink-dark/85 leading-snug">
+                        <li>🚀 <span class="text-pen-blue">Ovidiu</span> · Apollo 42 · in orbit</li>
+                        <li>🚀 <span class="text-pen-blue">Mae</span> · Endeavour · in orbit</li>
+                        <li>🌍 <span class="text-pen-green">Sergei</span> · Soyuz 11 · earth-side</li>
+                    </ul>
+                    <p class="mt-3 font-sketch text-sm text-ink-soft italic">3 of 6 astronauts</p>
+                </Polaroid>
+
+                <Sticky color="mint" rotate={-2}>
+                    <h3 class="font-title text-[28px] leading-tight text-ink-dark mb-1">what you'll know</h3>
+                    <ul class="font-hand text-[17px] leading-tight text-ink-dark/90 space-y-1">
+                        <li>· pages and components</li>
+                        <li>· props, lists, conditionals</li>
+                        <li>· file-based and dynamic routes</li>
+                        <li>· fetching live data</li>
+                        <li>· shipping to a real URL</li>
+                    </ul>
+                </Sticky>
+
+                <Sticky color="pink" rotate={2.5}>
+                    <h3 class="font-title text-[28px] leading-tight text-ink-dark mb-1">badges to earn</h3>
+                    <ul class="font-hand text-[16px] leading-tight text-ink-dark/90 space-y-1">
+                        {
+                            chapter1.lessons
+                                .filter((l) => l.badge)
+                                .map((l) => (
+                                    <li class="flex items-center gap-2">
+                                        <span class="text-pen-red">★</span>
+                                        <span class="font-title text-[20px]">{l.badge}</span>
+                                        <span class="ml-auto text-sm text-ink-soft">step {l.step}</span>
+                                    </li>
+                                ))
+                        }
+                    </ul>
+                </Sticky>
+
+                <a href={lessonUrl(ch2First)} class="group block no-underline cursor-pointer transition-transform hover:-translate-y-0.5">
+                    <Sticky color="peach" rotate={-1} class="group-hover:shadow-lg transition-shadow">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-sketch text-[12px] text-pen-red uppercase tracking-[0.18em]">next chapter</span>
+                            <span class="ml-auto font-title text-[22px] text-pen-red group-hover:translate-x-1 transition-transform">→</span>
+                        </div>
+                        <h4 class="font-title text-[26px] leading-tight text-ink-dark mb-1 group-hover:text-pen-red transition-colors">Ch. 2 · Mission Log</h4>
+                        <p class="font-hand text-[16px] text-ink-soft leading-tight mb-2">layouts, content, islands, real deployment.</p>
+                        <p class="font-sketch text-[13px] text-pen-red/80 italic">click to start →</p>
+                    </Sticky>
+                </a>
+            </aside>
+        </div>
+    </main>
+</NotebookLayout>
+
+<script>
+    import { getProgress, resumeUrl } from "~/scripts/progress";
+    import { findLesson } from "~/lib/lessons";
+
+    const state = getProgress();
+
+    document.querySelectorAll<HTMLElement>("[data-toc-item]").forEach((el) => {
+        const slug = el.getAttribute("data-toc-item")!;
+        if (state.completed.includes(slug)) {
+            const badge = el.querySelector<HTMLElement>("[data-toc-done]");
+            if (badge) {
+                badge.classList.remove("hidden");
+                badge.classList.add("inline-flex");
+            }
+        }
+    });
+
+    const url = resumeUrl(state);
+    if (url && state.completed.length > 0) {
+        const btn = document.querySelector<HTMLAnchorElement>(".lesson-start-btn");
+        const meta = document.querySelector<HTMLElement>("[data-start-meta]");
+        const slug = url.split("/").filter(Boolean).pop()!;
+        const lesson = findLesson(slug);
+        if (btn && lesson) {
+            btn.setAttribute("href", url);
+            const labelSpan = btn.querySelector("span");
+            if (labelSpan) labelSpan.textContent = `▶ Continue: ${lesson.title}`;
+        }
+        if (meta && state.xp > 0) {
+            meta.innerHTML = `you're at <span class="text-pen-red">${state.xp} XP</span> · ${state.completed.length} lesson${state.completed.length === 1 ? "" : "s"} done`;
+        }
+    }
+</script>

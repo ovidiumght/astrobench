@@ -1,0 +1,31 @@
+---
+type Props = {
+    rotate?: number;
+    caption?: string;
+    class?: string;
+};
+
+const { rotate = 2.5, caption, class: cls = "" } = Astro.props;
+---
+
+<div
+    class:list={["relative bg-white shadow-polaroid border border-ink-dark/8 p-3 pb-12 max-w-[360px]", cls]}
+    style={`transform:rotate(${rotate}deg)`}
+>
+    <span
+        class="absolute -top-4 left-1/2 -translate-x-1/2 w-28 h-7 bg-tape border-x border-tape-edge"
+        style="transform:translateX(-50%) rotate(1deg); background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"
+    ></span>
+
+    <div class="bg-paper-yellow border-2 border-paper-edge p-5">
+        <slot />
+    </div>
+
+    {
+        caption && (
+            <p class="absolute bottom-2.5 left-0 right-0 text-center font-title text-[22px] text-ink-soft -rotate-1">
+                {caption}
+            </p>
+        )
+    }
+</div>

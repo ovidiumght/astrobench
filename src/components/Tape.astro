@@ -1,0 +1,22 @@
+---
+type Props = {
+    rotate?: number;
+    width?: string;
+    height?: string;
+    color?: "yellow" | "pink" | "blue";
+    class?: string;
+};
+
+const { rotate = -2, width = "5rem", height = "1.4rem", color = "yellow", class: cls = "" } = Astro.props;
+
+const colorClasses = {
+    yellow: "bg-tape border-x border-tape-edge",
+    pink: "bg-marker-pink/55 border-x border-pen-red/25",
+    blue: "bg-sticky-blue/70 border-x border-sticky-blue-edge/40",
+};
+---
+
+<span
+    class:list={["block absolute pointer-events-none", colorClasses[color], cls]}
+    style={`width:${width};height:${height};transform:rotate(${rotate}deg);background-image:linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);`}
+></span>

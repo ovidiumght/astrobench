@@ -1,0 +1,19 @@
+---
+type Props = {
+    color?: "ink" | "red" | "blue" | "green" | "purple";
+    highlight?: boolean;
+};
+
+const { color = "ink", highlight = false } = Astro.props;
+const colorClass = {
+    ink: "text-ink-navy",
+    red: "text-pen-red",
+    blue: "text-pen-blue",
+    green: "text-pen-green",
+    purple: "text-pen-purple",
+}[color];
+---
+
+<code class:list={["font-type text-[15px]", colorClass, highlight && "bg-marker-yellow/60 px-1"]}>
+    <slot />
+</code>

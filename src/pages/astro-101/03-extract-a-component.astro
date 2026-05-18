@@ -1,0 +1,144 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, str, tag } from "~/lib/hl";
+
+const lesson = findLesson("03-extract-a-component")!;
+
+const cardCode = `---
+const name = "Astronaut";
+const mission = "Apollo 42";
+---
+
+<div class="card">
+    <h1>Hello, {name}!</h1>
+    <p>{mission} · ready for orbit.</p>
+</div>
+
+<style>
+    .card {
+        background: #0d0b2e;
+        color: #fef3c7;
+        padding: 1.5rem;
+        border-radius: 12px;
+        font-family: system-ui;
+    }
+</style>`;
+
+const indexCode = `${kw("---")}
+${kw("import")} ${ident("Card")} ${kw("from")} ${str("\"~/components/Card.astro\"")}${punct(";")}
+${kw("---")}
+
+${punct("&lt;")}${tag("Card")} ${punct("/&gt;")}`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "change-name",
+        text: 'change <code>name</code> to your own (anything but <code>"Astronaut"</code>)',
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceNotMatches", pattern: "const\\s+name\\s*=\\s*['\"]Astronaut['\"]" },
+                { kind: "sourceMatches", pattern: "const\\s+name\\s*=\\s*['\"][^'\"]+['\"]" },
+            ],
+        },
+    },
+    {
+        id: "change-mission",
+        text: 'change <code>mission</code> to anything but <code>"Apollo 42"</code>',
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceNotMatches", pattern: "const\\s+mission\\s*=\\s*['\"]Apollo\\s*42['\"]" },
+                { kind: "sourceMatches", pattern: "const\\s+mission\\s*=\\s*['\"][^'\"]+['\"]" },
+            ],
+        },
+    },
+    {
+        id: "add-emoji",
+        text: "add an emoji somewhere in the template (try 🚀 or 🛰)",
+        check: {
+            kind: "any",
+            checks: [
+                { kind: "outputMatches", pattern: "[🚀🛰🌌✨🪐🌙⭐🌍🌠🛸👨‍🚀👩‍🚀🌟]" },
+            ],
+        },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Two new ideas in this lesson — they're tangled, so we'll do them together.</p>
+            <p>&nbsp;</p>
+            <p><Marker>Components</Marker>: the card lives in its own file now. Any page can <CodeInline color="red">import</CodeInline> it. Astro looks for components in <CodeInline>src/components/</CodeInline>.</p>
+            <p>&nbsp;</p>
+            <p><Marker color="pink">Frontmatter and {`{ }`}</Marker>: the lines between <CodeInline color="red">---</CodeInline> at the top of any <CodeInline>.astro</CodeInline> file are JavaScript. Anything in <CodeInline color="red">{`{ }`}</CodeInline> down in the template uses those values.</p>
+            <p>&nbsp;</p>
+            <p>The card already uses <CodeInline>name</CodeInline> and <CodeInline>mission</CodeInline> variables. <Marker>Change them</Marker> — the polaroid follows along.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l3"
+            file="src/components/Card.astro"
+            note="brand new file"
+            code={cardCode}
+            minHeight={360}
+        />
+
+        <Prose class="mt-4">
+            <p>Now your <CodeInline>index.astro</CodeInline> can be <Marker>tiny</Marker>:</p>
+        </Prose>
+
+        <CodeCell file="src/pages/index.astro" note="much smaller" code={indexCode} />
+
+        <Prose class="mt-4">
+            <p>Same output. But your card is <Marker color="pink">reusable</Marker> now. We'll pass different astronauts to it on the next page.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l3" caption="page 3 ✦ driven by a variable" rotate={2} frameHeight={220} />
+
+            <Challenge cellId="ch1-l3" lessonSlug={lesson.slug} title="try this →" completedMessage="★ first component unlocked!" items={challenges} rotate={-1.5} />
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "pages/",
+                            children: [{ name: "index.astro", note: "uses Card" }],
+                        },
+                        {
+                            name: "components/",
+                            children: [{ name: "Card.astro", isNew: true }],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">Cheat sheet</h3>
+                <ul class="font-hand text-[17px] text-ink-dark/90 space-y-1.5 leading-tight">
+                    <li><CodeInline color="red">---</CodeInline> opens the frontmatter (JS)</li>
+                    <li><CodeInline color="red">const</CodeInline> defines a value</li>
+                    <li><CodeInline color="red">{`{ }`}</CodeInline> uses it in the template</li>
+                    <li><CodeInline color="red">import</CodeInline> brings a component in</li>
+                </ul>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

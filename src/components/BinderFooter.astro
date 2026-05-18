@@ -1,0 +1,53 @@
+---
+/**
+ * Lesson ↔ binder bridge. Drops a small "in the binder" footer at the bottom
+ * of a lesson page with chips for every concept introduced or reinforced in
+ * that lesson. Each chip deep-links to /explore#<id> where the card flashes.
+ *
+ * Mounted by NotebookPage.astro for every lesson; renders nothing when the
+ * lesson has no matching concept entries.
+ */
+import { conceptsForLesson, categoryMeta } from "~/lib/concepts";
+
+type Props = {
+    lessonSlug: string;
+};
+
+const { lessonSlug } = Astro.props;
+const items = conceptsForLesson(lessonSlug);
+---
+
+{
+    items.length > 0 && (
+        <section class="mt-10 mb-2 px-2">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="font-sketch text-[12px] uppercase tracking-[0.22em] text-pen-red">
+                    in the binder
+                </span>
+                <span class="h-px flex-1 bg-ink-dark/10" />
+                <a
+                    href="/explore"
+                    class="font-sketch text-sm text-ink-soft hover:text-pen-red cursor-pointer"
+                >
+                    open binder →
+                </a>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                {items.map((c) => {
+                    const meta = categoryMeta[c.category];
+                    return (
+                        <a
+                            href={`/explore#${c.id}`}
+                            class="group inline-flex items-center gap-2 bg-white/80 hover:bg-white border border-ink-dark/12 hover:border-pen-red/40 rounded-full px-3 py-1 font-sketch text-[14px] text-ink-soft hover:text-ink-dark cursor-pointer transition-colors"
+                            title={c.blurb}
+                        >
+                            <span class:list={["inline-block h-2 w-2 rounded-full", meta.dot]} />
+                            <span>{c.title}</span>
+                            <span class="opacity-40 group-hover:opacity-100 group-hover:text-pen-red transition-all">↗</span>
+                        </a>
+                    );
+                })}
+            </div>
+        </section>
+    )
+}

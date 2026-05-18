@@ -1,0 +1,91 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, str, tag, comment, a } from "~/lib/hl";
+
+const lesson = findLesson("06-when-to-hydrate")!;
+
+const code = `${comment("// loads immediately on page load")}
+${comment("// use for: above-the-fold widgets")}
+${punct("&lt;")}${tag("Hype")} ${a("client:load")} ${punct("/&gt;")}
+
+${comment("// loads when the browser is idle")}
+${comment("// use for: nice-to-haves, animations")}
+${punct("&lt;")}${tag("Newsletter")} ${a("client:idle")} ${punct("/&gt;")}
+
+${comment("// loads when it scrolls into view")}
+${comment("// use for: anything below the fold")}
+${punct("&lt;")}${tag("Comments")} ${a("client:visible")} ${punct("/&gt;")}
+
+${comment("// loads only on mobile (or any media query)")}
+${punct("&lt;")}${tag("MobileNav")} ${a("client:media", "(max-width: 700px)")} ${punct("/&gt;")}
+
+${comment("// renders on the client ONLY — never on the server")}
+${comment("// use for: things that need window, localStorage")}
+${punct("&lt;")}${tag("Map")} ${a("client:only", "preact")} ${punct("/&gt;")}`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p><CodeInline color="red">client:load</CodeInline> is the easy default — but it eagerly downloads and hydrates every island the moment the page lands.</p>
+            <p>&nbsp;</p>
+            <p>If your comments section is 300px down the page and 30 KB of JS, <Marker>you don't need it for the first paint</Marker>. Astro has finer-grained hints.</p>
+        </Prose>
+
+        <CodeCell file="src/pages/logs/launch-day.astro" note="pick your moment" code={code} />
+
+        <Prose class="mt-4">
+            <p><Marker color="pink">Default to <CodeInline color="red">client:visible</CodeInline></Marker>. It's the most polite — your bundle only loads if the user actually scrolls there.</p>
+            <p>&nbsp;</p>
+            <p><CodeInline color="red">client:only</CodeInline> is the escape hatch — for libraries that crash on the server because they read <CodeInline>window</CodeInline> or <CodeInline>document</CodeInline>.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="page 6 ✦ five flavors" rotate={2}>
+                <div class="space-y-2">
+                    {
+                        [
+                            { name: "client:load", desc: "now", icon: "⚡", color: "text-pen-red" },
+                            { name: "client:idle", desc: "when free", icon: "💤", color: "text-pen-blue" },
+                            { name: "client:visible", desc: "on scroll", icon: "👀", color: "text-pen-green" },
+                            { name: "client:media", desc: "on query", icon: "📱", color: "text-pen-purple" },
+                            { name: "client:only", desc: "skip server", icon: "🌐", color: "text-pen-red" },
+                        ].map(({ name, desc, icon, color }) => (
+                            <div class="bg-white border border-ink-dark/15 rounded-md p-2 flex items-center gap-2">
+                                <span class="text-base">{icon}</span>
+                                <code class={`font-type text-[11px] ${color} font-bold flex-1`}>{name}</code>
+                                <span class="font-sketch text-[10px] text-ink-soft italic">{desc}</span>
+                            </div>
+                        ))
+                    }
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">same component, five behaviors.</p>
+            </Polaroid>
+
+            <Sticky color="yellow" rotate={-2}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">Rule of thumb</h3>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    Above the fold + critical → <CodeInline color="red">load</CodeInline>.<br />
+                    Below the fold → <CodeInline color="red">visible</CodeInline>.<br />
+                    Truly optional → <CodeInline color="red">idle</CodeInline>.<br />
+                    Browser-only API → <CodeInline color="red">only</CodeInline>.
+                </p>
+            </Sticky>
+
+            <Sticky color="mint" rotate={1.5}>
+                <h3 class="font-title text-[24px] text-ink-dark leading-none mb-1">Cheaper than React?</h3>
+                <p class="font-hand text-[16px] text-ink-dark/90 leading-tight">
+                    Two pages, both built with Astro: one with <Marker>3 KB</Marker> of JS (smart hydration). One with <Marker color="pink">0 KB</Marker> (no islands). Most pages on your site should be the second kind.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

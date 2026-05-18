@@ -1,0 +1,157 @@
+---
+import "~/styles/global.css";
+import { chapters, chapterUrl } from "~/lib/lessons";
+import CommandPalette from "~/components/CommandPalette.astro";
+
+type Props = {
+    title: string;
+    description?: string;
+    chapterId?: string;
+};
+
+const {
+    title,
+    description = "Play with Astro · learn the framework by typing in a notebook. Live cells, instant previews, no setup.",
+    chapterId,
+} = Astro.props;
+
+const path = Astro.url.pathname;
+const activeChapter =
+    chapterId ?? chapters.find((c) => path === chapterUrl(c) || path.startsWith(`/${c.id}/`))?.id ?? null;
+const isMyLessons = path === "/my-lessons" || path === "/my-lessons/";
+const isExplore = path === "/explore" || path === "/explore/";
+
+/*
+ * Social card. Astro.site is set in astro.config.mjs ('https://astrobench.com')
+ * and Astro.url.pathname gives us the current route, so og:url is always the
+ * canonical absolute URL of THIS page. The image is one static asset shared
+ * across the site — it works on the home page and every lesson because the
+ * page title comes through as og:title.
+ */
+const siteName = "astrobench";
+const fullTitle = title === siteName ? `${title} · play with Astro` : `${title} · ${siteName}`;
+const ogImage = new URL("/og.png", Astro.site).toString();
+const ogUrl = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content={description} />
+        <link rel="canonical" href={ogUrl} />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={siteName} />
+        <meta property="og:title" content={fullTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="A yellow notebook page with 'astrobench' written by hand, a code snippet, and a polaroid showing the live preview." />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={fullTitle} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:creator" content="@phantomwp" />
+        <meta name="twitter:site" content="@phantomwp" />
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Courier+Prime:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='28'%3E📒%3C/text%3E%3C/svg%3E" />
+        <title>{fullTitle}</title>
+    </head>
+    <body class="min-h-screen text-ink-dark antialiased">
+        <header class="relative z-20 mx-auto max-w-[1500px] px-8 pt-7 pb-2 flex items-end justify-between flex-wrap gap-4">
+            <a href="/" class="group flex items-baseline gap-3 cursor-pointer">
+                <span class="font-title text-[44px] leading-none text-ink-dark group-hover:text-pen-red transition-colors">astrobench</span>
+                <span class="font-sketch text-lg text-ink-soft -translate-y-1">· play with code</span>
+            </a>
+
+            <nav class="flex items-end gap-1.5 -mb-1">
+                <a
+                    href="/my-lessons"
+                    class:list={[
+                        "font-sketch text-base px-4 pt-2 pb-3 border-2 border-b-0 rounded-t-md cursor-pointer",
+                        isMyLessons
+                            ? "bg-paper-yellow border-ink-dark/20 text-ink-dark relative -mb-[2px] shadow-[0_-2px_6px_rgba(0,0,0,0.04)]"
+                            : "bg-paper-warm border-ink-dark/15 text-ink-soft hover:text-ink-dark",
+                    ]}
+                >
+                    my lessons
+                </a>
+                {
+                    chapters.map((c, idx) => {
+                        const isActive = c.id === activeChapter;
+                        const classes = isActive
+                            ? "bg-paper-yellow border-ink-dark/20 text-ink-dark relative -mb-[2px] shadow-[0_-2px_6px_rgba(0,0,0,0.04)]"
+                            : "bg-paper-warm border-ink-dark/15 text-ink-soft hover:text-ink-dark";
+                        const chapterTag = isActive ? "text-pen-red" : "text-pen-red/70";
+                        return (
+                            <>
+                                {idx > 0 && (
+                                    <span class="font-sketch text-pen-red/60 text-lg pb-2 select-none" aria-hidden="true">
+                                        →
+                                    </span>
+                                )}
+                                <a
+                                    href={chapterUrl(c)}
+                                    class={`group font-sketch text-base px-4 pt-1.5 pb-3 border-2 border-b-0 rounded-t-md cursor-pointer leading-tight flex flex-col items-center ${classes}`}
+                                >
+                                    <span class={`text-[11px] uppercase tracking-[0.18em] ${chapterTag}`}>
+                                        Ch. {c.number}
+                                    </span>
+                                    <span>{c.shortName}</span>
+                                </a>
+                            </>
+                        );
+                    })
+                }
+                <a
+                    href="/explore"
+                    class:list={[
+                        "ml-2 font-sketch text-base px-4 pt-2 pb-3 border-2 border-b-0 rounded-t-md cursor-pointer",
+                        isExplore
+                            ? "bg-paper-yellow border-ink-dark/20 text-ink-dark relative -mb-[2px] shadow-[0_-2px_6px_rgba(0,0,0,0.04)]"
+                            : "bg-paper-warm border-ink-dark/15 text-ink-soft hover:text-ink-dark",
+                    ]}
+                >
+                    explore
+                </a>
+            </nav>
+        </header>
+
+        <slot />
+
+        <footer class="relative z-10 mx-auto max-w-[1500px] px-8 pb-10 pt-6 font-sketch text-base text-ink-soft flex flex-wrap items-center justify-between gap-y-2 gap-x-6">
+            <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>astrobench · a notebook for the curious</span>
+                <span class="text-ink-soft/50" aria-hidden="true">·</span>
+                <span>
+                    by
+                    <a
+                        href="https://phantomwp.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-pen-red hover:text-pen-red/70 underline decoration-pen-red/30 hover:decoration-pen-red underline-offset-4 cursor-pointer"
+                    >
+                        @phantomwp
+                        <span class="text-ink-soft/60 not-italic" aria-hidden="true">↗</span>
+                    </a>
+                </span>
+            </span>
+            <span class="hidden sm:inline">
+                press <kbd class="font-type text-[12px] bg-white border border-ink-dark/15 rounded px-1.5 py-0.5 mx-0.5">⌘K</kbd> to search · est. 2026
+            </span>
+        </footer>
+
+        <CommandPalette />
+    </body>
+</html>

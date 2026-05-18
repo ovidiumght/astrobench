@@ -1,0 +1,115 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+
+const lesson = findLesson("02-style-it-up")!;
+
+const code = `<div class="card">
+    <h1>Hello, Astronaut!</h1>
+    <p>Apollo 42 · ready for orbit.</p>
+</div>
+
+<style>
+    .card {
+        background: #0d0b2e;
+        color: #fef3c7;
+        padding: 1.5rem;
+        border-radius: 12px;
+        font-family: system-ui;
+    }
+</style>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "change-background",
+        text: "change the card's <code>background</code> to a different color",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceMatches", pattern: "\\.card[\\s\\S]*?background\\s*:" },
+                { kind: "sourceNotMatches", pattern: "background\\s*:\\s*#0d0b2e" },
+            ],
+        },
+    },
+    {
+        id: "tweak-radius",
+        text: "make the <code>border-radius</code> bigger or smaller (not 12px)",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceMatches", pattern: "\\.card[\\s\\S]*?border-radius\\s*:" },
+                { kind: "sourceNotMatches", pattern: "border-radius\\s*:\\s*12px" },
+            ],
+        },
+    },
+    {
+        id: "add-style-rule",
+        text: "add one extra CSS rule for <code>h1</code> or <code>p</code>",
+        check: {
+            kind: "any",
+            checks: [
+                { kind: "sourceMatches", pattern: "\\.card\\s+h1\\s*\\{" },
+                { kind: "sourceMatches", pattern: "\\.card\\s+p\\s*\\{" },
+                { kind: "sourceMatches", pattern: "(^|\\n)\\s*h1\\s*\\{" },
+                { kind: "sourceMatches", pattern: "(^|\\n)\\s*p\\s*\\{" },
+            ],
+        },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>The page works but it looked like 1995. Now it has some <Marker color="pink">atmosphere</Marker>.</p>
+            <p>&nbsp;</p>
+            <p>Astro lets you write <CodeInline color="blue">&lt;style&gt;</CodeInline> right next to your HTML, and the styles only apply to <span class="italic">this file</span>. No leaking, no surprises.</p>
+            <p>&nbsp;</p>
+            <p>Notice the <CodeInline color="blue">&lt;div class="card"&gt;</CodeInline> wrapping the content, and the <CodeInline color="blue">&lt;style&gt;</CodeInline> block at the bottom. <Marker>Make it your own</Marker> — change colors, tweak the radius, add a rule. The polaroid follows.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l2"
+            file="src/pages/index.astro"
+            note="now with style"
+            code={code}
+            minHeight={300}
+        />
+
+        <Prose class="mt-4">
+            <p><Marker>Scoped styles</Marker> are one of Astro's gifts. Use the same <CodeInline color="purple">.card</CodeInline> class in another file — it won't accidentally collide with this one.</p>
+            <p>&nbsp;</p>
+            <p class="font-sketch text-pen-red italic">heads up: the live preview shows your real CSS. Astro adds scoping in a real project — that's automatic and we can't reproduce it in this tiny sandbox.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l2" caption="page 2 ✦ your styles, live" rotate={2.5} frameHeight={220} />
+
+            <Challenge cellId="ch1-l2" lessonSlug={lesson.slug} title="try this →" completedMessage="★ stylist unlocked!" items={challenges} rotate={-1.5} />
+
+            <Sticky color="yellow" rotate={2.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">Why scoped?</h3>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    Astro adds a secret label to your <CodeInline color="purple">.card</CodeInline> behind the scenes. Your styles only match elements <Marker>in this file</Marker>. No CSS turf wars.
+                </p>
+            </Sticky>
+
+            <Sticky color="peach" rotate={1.5}>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-sketch text-[13px] text-pen-red uppercase tracking-wider">+ hint</span>
+                </div>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    Try these properties: <CodeInline>background</CodeInline>, <CodeInline>color</CodeInline>, <CodeInline>padding</CodeInline>, <CodeInline>border-radius</CodeInline>, <CodeInline>font-family</CodeInline>. Any colors you like.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

@@ -1,0 +1,118 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, expr, str, tag, comment, open, close, a } from "~/lib/hl";
+
+const lesson = findLesson("04-pictures-perfected")!;
+
+const code = `${kw("---")}
+${kw("import")} ${punct("{")} ${ident("Image")} ${punct("}")} ${kw("from")} ${str("\"astro:assets\"")}${punct(";")}
+${kw("import")} ${ident("liftoff")} ${kw("from")} ${str("\"~/assets/liftoff.jpg\"")}${punct(";")}
+${kw("---")}
+
+${punct("&lt;")}${tag("Image")}
+&nbsp;&nbsp;${a("src", "{liftoff}")}
+&nbsp;&nbsp;${a("alt", "Apollo 42 clearing the tower")}
+&nbsp;&nbsp;${a("widths", "{[400, 800, 1200]}")}
+&nbsp;&nbsp;${a("sizes", "(max-width: 700px) 100vw, 700px")}
+&nbsp;&nbsp;${a("format", "webp")}
+&nbsp;&nbsp;${a("loading", "lazy")}
+${punct("/&gt;")}`;
+
+const outputCode = `${comment("// what Astro actually sends to the browser:")}
+${open("img")}
+&nbsp;&nbsp;${a("src", "/_astro/liftoff.D3kF.webp")}
+&nbsp;&nbsp;${a("srcset", "/_astro/liftoff.400.webp 400w, /_astro/liftoff.800.webp 800w, ...")}
+&nbsp;&nbsp;${a("sizes", "(max-width: 700px) 100vw, 700px")}
+&nbsp;&nbsp;${a("alt", "Apollo 42 clearing the tower")}
+&nbsp;&nbsp;${a("width", "1200")}
+&nbsp;&nbsp;${a("height", "800")}
+&nbsp;&nbsp;${a("loading", "lazy")}
+${punct("/&gt;")}`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Your mission logs need <Marker>photos</Marker>. A 4 MB JPEG from your phone will work — and absolutely ruin the page load.</p>
+            <p>&nbsp;</p>
+            <p>Astro ships an <CodeInline color="blue">&lt;Image&gt;</CodeInline> component. You give it the original. It gives you: <Marker color="pink">three sizes</Marker>, modern formats (WebP, AVIF), lazy loading, and the right <CodeInline>width</CodeInline>/<CodeInline>height</CodeInline> so layout doesn't shift.</p>
+            <p>&nbsp;</p>
+            <p>Drop the photo in <CodeInline>src/assets/</CodeInline>, then:</p>
+        </Prose>
+
+        <CodeCell file="src/pages/logs/launch-day.astro" highlightLine={2} code={code} />
+
+        <Prose class="mt-4">
+            <p>You write nine lines. Astro generates this — <Marker>for free</Marker>:</p>
+        </Prose>
+
+        <CodeCell file="rendered HTML" note="generated, not authored" code={outputCode} />
+
+        <Prose class="mt-4">
+            <p>The browser picks the right size based on screen width. The image lazy-loads. Layout is reserved before pixels arrive. <Marker color="pink">Three years of frontend best practices, one component.</Marker></p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="page 4 ✦ liftoff.webp · 87KB" rotate={2}>
+                <div class="aspect-[4/3] bg-gradient-to-b from-[#0d0b2e] via-[#3d1d5e] to-[#a83232] rounded-md relative overflow-hidden">
+                    <span class="absolute top-3 right-4 text-yellow-200 text-xl">★</span>
+                    <span class="absolute top-6 left-6 text-yellow-100 text-sm">★</span>
+                    <span class="absolute top-1/3 left-1/2 -translate-x-1/2 text-2xl">🚀</span>
+                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-16 bg-gradient-to-t from-orange-400/80 via-yellow-300/60 to-transparent blur-sm"></div>
+                </div>
+                <div class="mt-1 flex items-center justify-between text-[10px] font-sketch">
+                    <span class="text-pen-green">✓ 87 KB</span>
+                    <span class="text-ink-soft line-through">4.1 MB</span>
+                </div>
+                <p class="mt-1 font-sketch text-sm text-pen-green italic">47× smaller, same picture.</p>
+            </Polaroid>
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "assets/",
+                            isNew: true,
+                            children: [{ name: "liftoff.jpg", isNew: true, note: "your source" }],
+                        },
+                        {
+                            name: "pages/",
+                            children: [
+                                {
+                                    name: "logs/",
+                                    children: [{ name: "launch-day.astro", note: "uses <Image>" }],
+                                },
+                            ],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">Why import the image?</h3>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    Astro reads its real dimensions, hashes its contents, and can move it to <CodeInline>_astro/</CodeInline> at build. If you delete the file, you'd get a <Marker color="pink">build error</Marker> — not a 404 in production.
+                </p>
+            </Sticky>
+
+            <Sticky color="mint" rotate={-1.5}>
+                <h3 class="font-title text-[24px] text-ink-dark leading-none mb-1">When to skip it</h3>
+                <p class="font-hand text-[16px] text-ink-dark/90 leading-tight">
+                    Images from <Marker>remote URLs</Marker> or user uploads — use a plain <CodeInline color="blue">&lt;img&gt;</CodeInline>. <CodeInline color="blue">&lt;Image&gt;</CodeInline> works on local files only by default.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

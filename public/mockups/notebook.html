@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>astrobench — Build your first Astro component</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        desk: '#e7d9b9',
+                        deskDark: '#c8b88a',
+                        paper: {
+                            yellow: '#fefae0',
+                            warm: '#fff4c2',
+                            edge: '#e8d27a',
+                            shadow: '#d4b94a',
+                        },
+                        line: '#a8c8e8',
+                        lineSoft: '#cfddee',
+                        ink: {
+                            dark: '#2a3346',
+                            blue: '#1e3a8a',
+                            navy: '#1a2b4a',
+                            soft: '#4a5878',
+                        },
+                        pen: {
+                            red: '#c84545',
+                            redSoft: '#e68b8b',
+                            blue: '#2563eb',
+                            green: '#3a9a4d',
+                            purple: '#8b5cf6',
+                        },
+                        marker: {
+                            yellow: '#ffe666',
+                            pink: '#ffb7d6',
+                            green: '#bbf28a',
+                        },
+                        sticky: {
+                            pink: '#ffd3e1',
+                            pinkEdge: '#f4a6c2',
+                            yellow: '#fff5a5',
+                            yellowEdge: '#e8d870',
+                            mint: '#c7f0c2',
+                            mintEdge: '#9bd49a',
+                            blue: '#cfe7ff',
+                            blueEdge: '#8fc1ee',
+                        },
+                        tape: 'rgba(255, 220, 130, 0.55)',
+                        tapeEdge: 'rgba(200, 150, 50, 0.4)',
+                    },
+                    fontFamily: {
+                        hand: ['"Kalam"', 'cursive'],
+                        title: ['"Caveat"', 'cursive'],
+                        sketch: ['"Patrick Hand"', 'cursive'],
+                        type: ['"Courier Prime"', 'monospace'],
+                    },
+                    animation: {
+                        blink: 'blink 1.05s steps(2) infinite',
+                        wobble: 'wobble 6s ease-in-out infinite',
+                        float: 'float 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        blink: { '0%,50%': { opacity: '1' }, '50.01%,100%': { opacity: '0' } },
+                        wobble: { '0%,100%': { transform: 'rotate(-2deg)' }, '50%': { transform: 'rotate(-0.5deg)' } },
+                        float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-3px)' } },
+                    },
+                    boxShadow: {
+                        paper: '0 2px 0 0 #d4b94a, 0 4px 12px 0 rgba(80,60,20,0.18)',
+                        sticky: '2px 3px 0 0 rgba(80,60,20,0.12), 4px 6px 14px 0 rgba(80,60,20,0.18)',
+                        polaroid: '0 3px 0 0 rgba(120,100,60,0.12), 0 12px 28px -6px rgba(80,60,20,0.35)',
+                        code: 'inset 0 0 0 1px rgba(60,80,120,0.15), 0 1px 0 0 rgba(60,80,120,0.1), 0 4px 14px -4px rgba(60,80,120,0.25)',
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="min-h-screen bg-desk font-hand text-ink-dark antialiased selection:bg-marker-yellow/80 selection:text-ink-dark
+             bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.4),transparent_45%),radial-gradient(circle_at_80%_85%,rgba(120,90,30,0.18),transparent_50%)]">
+
+    <header class="relative z-20 mx-auto max-w-[1500px] px-8 pt-7 pb-2 flex items-end justify-between">
+        <a href="#" class="group flex items-baseline gap-3 cursor-pointer">
+            <span class="font-title text-[44px] leading-none text-ink-dark group-hover:text-pen-red transition-colors">astrobench</span>
+            <span class="font-sketch text-lg text-ink-soft -translate-y-1">· play with code</span>
+        </a>
+
+        <nav class="flex items-end gap-2 -mb-1">
+            <a href="#" class="font-sketch text-base px-4 pt-2 pb-3 bg-paper-warm border-2 border-ink-dark/15 border-b-0 rounded-t-md text-ink-soft hover:text-ink-dark cursor-pointer">my lessons</a>
+            <a href="#" class="font-sketch text-base px-4 pt-2 pb-3 bg-paper-yellow border-2 border-ink-dark/20 border-b-0 rounded-t-md text-ink-dark relative -mb-[2px] cursor-pointer">Astro 101</a>
+            <a href="#" class="font-sketch text-base px-4 pt-2 pb-3 bg-paper-warm border-2 border-ink-dark/15 border-b-0 rounded-t-md text-ink-soft hover:text-ink-dark cursor-pointer">explore</a>
+        </nav>
+    </header>
+
+    <main class="relative z-10 mx-auto max-w-[1500px] px-8 pb-14">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 items-start">
+
+            <article class="relative bg-paper-yellow shadow-paper border-2 border-paper-edge rounded-sm overflow-hidden">
+
+                <div class="absolute -top-3 left-[24%] w-32 h-7 bg-tape border-x border-tapeEdge -rotate-2 z-10"
+                     style="background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"></div>
+                <div class="absolute -top-2 right-[18%] w-24 h-6 bg-marker-pink/55 border-x border-pen-red/25 rotate-3 z-10"></div>
+
+                <div class="absolute top-3 left-0 right-0 flex justify-center gap-32 pointer-events-none">
+                    <span class="block h-4 w-4 rounded-full bg-deskDark/80 shadow-[inset_0_2px_2px_rgba(0,0,0,0.25)]"></span>
+                    <span class="block h-4 w-4 rounded-full bg-deskDark/80 shadow-[inset_0_2px_2px_rgba(0,0,0,0.25)]"></span>
+                    <span class="block h-4 w-4 rounded-full bg-deskDark/80 shadow-[inset_0_2px_2px_rgba(0,0,0,0.25)]"></span>
+                </div>
+
+                <div class="relative pl-24 pr-12 pt-16 pb-14
+                            bg-[linear-gradient(to_bottom,transparent_31px,#a8c8e8_31px,#a8c8e8_32px,transparent_32px)]
+                            bg-[length:100%_32px] bg-[position:0_24px]">
+
+                    <div class="absolute left-[68px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+                    <div class="absolute left-[72px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+
+                    <div class="absolute -left-1 top-12 -rotate-[8deg] font-sketch text-pen-red text-lg leading-tight w-20 text-center pointer-events-none">
+                        <div>Step</div>
+                        <div class="text-2xl leading-none">4<span class="text-base text-pen-red/70">/10</span></div>
+                    </div>
+
+                    <div class="absolute left-3 top-44 -rotate-[18deg] pointer-events-none opacity-80">
+                        <svg viewBox="0 0 40 50" class="h-14 w-10 stroke-pen-red fill-none" stroke-width="1.6" stroke-linecap="round">
+                            <path d="M5 5 Q 18 12 22 30 Q 24 40 30 45" />
+                            <path d="M24 38 L 30 45 L 22 46" />
+                        </svg>
+                    </div>
+
+                    <div class="relative">
+                        <h1 class="font-title text-[58px] leading-[0.9] text-ink-dark mb-1">
+                            Greet the<br/>astronaut!
+                        </h1>
+                        <span class="block h-2 w-56 bg-marker-yellow/70 -mt-3 -ml-1 -rotate-1 mb-6"></span>
+                    </div>
+
+                    <div class="font-hand text-[20px] leading-[32px] text-ink-dark/90 space-y-0 max-w-[560px]">
+                        <p>Your component is alive, but it's a little quiet.</p>
+                        <p>&nbsp;</p>
+                        <p>In Astro, anything between <span class="bg-marker-yellow/70 px-1 -mx-1">curly braces</span> is real JavaScript &mdash; the variables from up top are in scope down below.</p>
+                        <p>&nbsp;</p>
+                        <p>Try replacing the word <span class="line-through decoration-pen-red decoration-2 text-ink-soft">there</span> with <span class="font-type text-[17px] text-ink-blue">{name}</span> &nbsp;in the &lt;h1&gt;.</p>
+                    </div>
+
+                    <div class="relative my-10">
+
+                        <div class="absolute -top-3 left-6 w-20 h-5 bg-tape border-x border-tapeEdge -rotate-2 z-10"></div>
+                        <div class="absolute -top-3 right-12 w-20 h-5 bg-tape border-x border-tapeEdge rotate-2 z-10"></div>
+
+                        <div class="relative bg-white border-2 border-ink-dark/12 shadow-code rounded-sm">
+
+                            <div class="flex items-center gap-2 border-b-2 border-dashed border-ink-dark/15 px-4 py-2 bg-paper-yellow/40">
+                                <span class="grid h-4 w-4 place-items-center font-sketch text-pen-red text-sm rotate-[-4deg]">✦</span>
+                                <span class="font-sketch text-base text-ink-soft">index.astro</span>
+                                <span class="font-sketch text-sm text-pen-red/80 italic">— editing</span>
+                                <span class="ml-auto font-sketch text-sm text-ink-soft">↵ run · ⌘S save</span>
+                            </div>
+
+                            <div class="flex font-type text-[14.5px] leading-[1.85] relative">
+                                <div class="select-none px-3 py-3 text-right text-ink-soft/50 border-r border-dashed border-ink-dark/12">
+                                    <div>1</div><div>2</div><div>3</div><div>4</div>
+                                    <div>5</div><div class="text-pen-red font-bold">6</div><div>7</div>
+                                    <div>8</div><div>9</div>
+                                </div>
+
+                                <pre class="flex-1 px-4 py-3 overflow-x-auto text-ink-navy"><code><span class="text-pen-red">---</span>
+<span class="text-pen-red">const</span> name <span class="text-ink-soft">=</span> <span class="text-pen-green">"Astronaut"</span>;
+<span class="text-pen-red">const</span> mission <span class="text-ink-soft">=</span> <span class="text-pen-green">"Apollo&nbsp;42"</span>;
+<span class="text-pen-red">---</span>
+
+<span class="text-ink-soft">&lt;</span><span class="text-pen-blue">div</span> <span class="text-pen-purple">class</span><span class="text-ink-soft">=</span><span class="text-pen-green">"card"</span><span class="text-ink-soft">&gt;</span>
+&nbsp;&nbsp;<span class="text-ink-soft">&lt;</span><span class="text-pen-blue">h1</span><span class="text-ink-soft">&gt;</span>Hello, <span class="text-pen-red">{</span><span class="bg-marker-yellow/80 border-b-2 border-pen-red text-ink-navy px-[1px]">n<span class="inline-block w-[2px] h-[16px] bg-ink-navy align-middle animate-blink ml-[1px]"></span></span><span class="text-pen-red">}</span>!<span class="text-ink-soft">&lt;/</span><span class="text-pen-blue">h1</span><span class="text-ink-soft">&gt;</span>
+&nbsp;&nbsp;<span class="text-ink-soft">&lt;</span><span class="text-pen-blue">p</span><span class="text-ink-soft">&gt;</span>Welcome to <span class="text-pen-red">{</span>mission<span class="text-pen-red">}</span>.<span class="text-ink-soft">&lt;/</span><span class="text-pen-blue">p</span><span class="text-ink-soft">&gt;</span>
+<span class="text-ink-soft">&lt;/</span><span class="text-pen-blue">div</span><span class="text-ink-soft">&gt;</span></code></pre>
+                            </div>
+                        </div>
+
+                        <div class="absolute right-[-32px] top-[148px] z-30 w-[230px]">
+                            <svg viewBox="0 0 220 80" class="absolute -left-[110px] top-[18px] w-[140px] h-[60px] stroke-pen-red fill-none pointer-events-none" stroke-width="1.8" stroke-linecap="round">
+                                <path d="M210 60 Q 150 70 100 50 Q 50 30 10 30" stroke-dasharray="0" />
+                                <path d="M18 24 L 10 30 L 18 36" />
+                            </svg>
+
+                            <div class="bg-sticky-yellow shadow-sticky rotate-[3deg] border border-sticky-yellowEdge/60 px-4 py-3 font-sketch text-ink-dark">
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <span class="font-sketch text-[12px] text-pen-red uppercase tracking-wider">suggest ↑↓ tab</span>
+                                </div>
+                                <ul class="text-[17px] leading-[1.35] space-y-1">
+                                    <li class="flex items-center gap-2">
+                                        <span class="grid h-5 w-5 place-items-center bg-pen-blue/15 text-pen-blue rounded-full text-[11px] font-bold">v</span>
+                                        <span class="font-type text-[14px] text-ink-navy bg-marker-yellow/60 px-1">name</span>
+                                        <span class="ml-auto text-[12px] text-ink-soft italic">var</span>
+                                    </li>
+                                    <li class="flex items-center gap-2 opacity-80">
+                                        <span class="grid h-5 w-5 place-items-center bg-pen-red/15 text-pen-red rounded-full text-[11px] font-bold">f</span>
+                                        <span class="font-type text-[14px] text-ink-navy">name.toUpper..</span>
+                                        <span class="ml-auto text-[12px] text-ink-soft italic">fn</span>
+                                    </li>
+                                    <li class="flex items-center gap-2 opacity-80">
+                                        <span class="grid h-5 w-5 place-items-center bg-pen-green/15 text-pen-green rounded-full text-[11px] font-bold">#</span>
+                                        <span class="font-type text-[14px] text-ink-navy">name.length</span>
+                                        <span class="ml-auto text-[12px] text-ink-soft italic">num</span>
+                                    </li>
+                                </ul>
+                                <div class="mt-2 pt-2 border-t border-dashed border-ink-dark/20 font-type text-[12px] text-ink-soft truncate">
+                                    name = <span class="text-pen-green">"Astronaut"</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative my-8 max-w-[560px]">
+                        <p class="font-hand text-[20px] leading-[32px] text-ink-dark/90">
+                            When the editor is happy, hit <span class="font-title text-pen-red text-[26px]">Run</span> to see your changes show up on the right.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-4 mt-8">
+                        <button class="group relative font-title text-[28px] text-pen-red leading-none cursor-pointer">
+                            <span class="relative z-10 px-7 py-2 inline-block">▶ Run it!</span>
+                            <svg viewBox="0 0 200 60" class="absolute inset-0 w-full h-full stroke-pen-red fill-none group-hover:stroke-[3.5] transition-all" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" preserveAspectRatio="none">
+                                <path d="M10 18 Q 4 8 18 6 L 180 4 Q 196 4 194 22 L 192 48 Q 196 58 178 56 L 22 56 Q 6 54 8 40 Z" />
+                            </svg>
+                        </button>
+
+                        <button class="font-sketch text-lg text-ink-soft underline decoration-dashed decoration-ink-soft/40 underline-offset-4 hover:text-pen-red hover:decoration-pen-red cursor-pointer">need a hint?</button>
+                        <button class="font-sketch text-lg text-ink-soft hover:text-ink-dark cursor-pointer">peek at solution</button>
+                    </div>
+
+                    <div class="absolute bottom-4 right-6 -rotate-3 font-sketch text-base text-ink-soft/60 italic pointer-events-none">
+                        — page 4 —
+                    </div>
+                </div>
+            </article>
+
+            <aside class="space-y-8 lg:pt-10">
+
+                <div class="relative bg-white shadow-polaroid rotate-[2.5deg] border border-ink-dark/8 p-3 pb-12 max-w-[360px] mx-auto">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-28 h-7 bg-tape border-x border-tapeEdge rotate-[1deg]"
+                         style="background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"></div>
+
+                    <div class="bg-paper-yellow border-2 border-paper-edge p-5">
+                        <h2 class="font-title text-[34px] leading-[0.95] text-ink-dark mb-2">
+                            Hello, <span class="text-pen-red">Astronaut!</span>
+                        </h2>
+                        <p class="font-hand text-[18px] leading-tight text-ink-dark/85">Welcome to <span class="text-pen-blue">Apollo 42</span>.</p>
+                    </div>
+
+                    <p class="absolute bottom-2.5 left-0 right-0 text-center font-title text-[22px] text-ink-soft -rotate-1">
+                        my first component ✦
+                    </p>
+                </div>
+
+                <div class="relative bg-sticky-pink border border-sticky-pinkEdge/60 shadow-sticky -rotate-[2deg] p-4 max-w-[300px] ml-6 animate-wobble">
+                    <div class="absolute -top-3 left-8 w-16 h-5 bg-tape border-x border-tapeEdge -rotate-2"></div>
+
+                    <h3 class="font-title text-[28px] text-ink-dark leading-none mb-2">Checks <span class="text-base text-ink-soft font-sketch">2/3</span></h3>
+                    <ul class="font-hand text-[18px] text-ink-dark/90 space-y-1.5 leading-tight">
+                        <li class="flex items-start gap-2">
+                            <span class="text-pen-green text-xl leading-none">✓</span>
+                            <span>component renders</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-pen-green text-xl leading-none">✓</span>
+                            <span>frontmatter has <span class="font-type text-[14px] bg-marker-yellow/60 px-1">name</span></span>
+                        </li>
+                        <li class="flex items-start gap-2 opacity-65">
+                            <span class="text-ink-soft text-xl leading-none">○</span>
+                            <span><span class="font-type text-[14px]">&lt;h1&gt;</span> uses <span class="font-type text-[14px] text-pen-red">{name}</span></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="relative bg-sticky-mint border border-sticky-mintEdge/70 shadow-sticky rotate-[3deg] p-4 max-w-[260px] mx-auto">
+                    <div class="absolute -top-3 right-6 w-14 h-5 bg-marker-yellow/65 border-x border-pen-red/25 rotate-3"></div>
+
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-sketch text-[13px] text-pen-green uppercase tracking-wider">unlocked!</span>
+                        <span class="font-title text-[22px] text-pen-red animate-float">★</span>
+                    </div>
+                    <h4 class="font-title text-[26px] leading-tight text-ink-dark">First Component</h4>
+                    <p class="font-hand text-[16px] text-ink-soft leading-tight">+50 XP &middot; pin to journal?</p>
+                </div>
+
+                <div class="relative bg-paper-warm border-2 border-paper-edge border-dashed shadow-sticky -rotate-[1.5deg] p-4 max-w-[320px] ml-4
+                            bg-[linear-gradient(to_bottom,transparent_27px,#cfddee_27px,#cfddee_28px,transparent_28px)]
+                            bg-[length:100%_28px]">
+
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="font-sketch text-[14px] text-pen-red uppercase tracking-wider">up next →</span>
+                        <span class="font-title text-[20px] text-ink-soft">step 5</span>
+                    </div>
+                    <h4 class="font-title text-[26px] leading-tight text-ink-dark mb-1">Pass props to<br/>your component</h4>
+                    <p class="font-hand text-[16px] text-ink-soft leading-tight">make <span class="font-type text-[13px] bg-marker-yellow/60 px-1">name</span> a prop so any page can greet a different astronaut.</p>
+                    <p class="mt-2 font-sketch text-[14px] text-pen-green">+75 XP · earns "Props Pilot" badge</p>
+                </div>
+            </aside>
+        </div>
+
+        <div class="mt-12 flex flex-wrap items-center gap-5 px-2">
+            <div class="flex items-center gap-2 font-sketch text-base text-ink-soft">
+                <span class="h-3 w-3 rounded-full bg-pen-green inline-block animate-pulse"></span>
+                <span>saved a moment ago</span>
+            </div>
+
+            <span class="hidden sm:inline text-ink-soft/40">·</span>
+
+            <div class="flex items-center gap-1.5 font-sketch text-base text-ink-soft">
+                <span class="text-pen-red">XP</span>
+                <span class="text-ink-dark text-lg">2,340</span>
+            </div>
+
+            <span class="hidden sm:inline text-ink-soft/40">·</span>
+
+            <div class="flex items-center gap-1.5 font-sketch text-base text-ink-soft">
+                <span class="text-pen-red">streak</span>
+                <span class="text-ink-dark text-lg">7</span>
+                <span class="text-pen-red">days</span>
+                <span class="font-title text-pen-red text-xl">♥</span>
+            </div>
+
+            <div class="ml-auto flex items-center gap-3">
+                <button class="font-sketch text-lg text-ink-soft hover:text-ink-dark px-3 py-1.5 cursor-pointer">◄ previous</button>
+
+                <button class="group relative font-title text-[26px] text-ink-dark leading-none cursor-pointer">
+                    <span class="relative z-10 px-6 py-2 inline-block">next page →</span>
+                    <svg viewBox="0 0 200 60" class="absolute inset-0 w-full h-full stroke-ink-dark fill-none group-hover:stroke-pen-red transition-colors" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" preserveAspectRatio="none">
+                        <path d="M10 18 Q 4 8 18 6 L 180 4 Q 196 4 194 22 L 192 48 Q 196 58 178 56 L 22 56 Q 6 54 8 40 Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="relative z-10 mx-auto max-w-[1500px] px-8 pb-10 font-sketch text-base text-ink-soft flex items-center justify-between">
+        <span>astrobench · a notebook for the curious</span>
+        <span class="hidden sm:inline">drawn with care · est. 2026</span>
+    </footer>
+
+</body>
+</html>

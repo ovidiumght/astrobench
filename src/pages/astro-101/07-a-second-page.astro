@@ -1,0 +1,97 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+
+const lesson = findLesson("07-a-second-page")!;
+
+const code = `<html>
+    <h1>About Mission Control</h1>
+    <p>We send people to the stars, then we make websites about it.</p>
+    <p><a href="/">← back to the crew</a></p>
+</html>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "personalize",
+        text: "change the <code>&lt;h1&gt;</code> to your own headline",
+        check: { kind: "sourceNotMatches", pattern: "<h1[^>]*>\\s*About Mission Control\\s*</h1>" },
+    },
+    {
+        id: "extra-paragraph",
+        text: "add a <strong>third paragraph</strong>",
+        check: { kind: "outputMatches", pattern: "(<p[^>]*>[\\s\\S]*?</p>[\\s\\S]*?){3}" },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>So far, your project has one file: <CodeInline>index.astro</CodeInline>. One file, one page.</p>
+            <p>&nbsp;</p>
+            <p>The press has been asking what Mission Control is. <Marker>Time for an About page.</Marker></p>
+            <p>&nbsp;</p>
+            <p>In Astro, you don't configure routes. You don't write a router. <Marker color="pink">You add a file.</Marker> Drop <CodeInline>about.astro</CodeInline> in <CodeInline>src/pages/</CodeInline> and you instantly have <CodeInline>/about</CodeInline>.</p>
+            <p>&nbsp;</p>
+            <p>Make it yours. Change the headline, add a second paragraph, keep the link.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l7"
+            file="src/pages/about.astro"
+            note="brand new"
+            code={code}
+            minHeight={200}
+        />
+
+        <Prose class="mt-4">
+            <p>Open <CodeInline>/about</CodeInline> in your real project's preview and click the link to bounce back. <Marker>You have a site now.</Marker></p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l7" caption="page 7 ✦ /about" rotate={2.5} frameHeight={200} />
+
+            <Challenge cellId="ch1-l7" lessonSlug={lesson.slug} title="try this →" completedMessage="★ now you have a site!" items={challenges} rotate={-1.5} />
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "pages/",
+                            children: [
+                                { name: "index.astro", note: "/" },
+                                { name: "about.astro", isNew: true, note: "/about" },
+                            ],
+                        },
+                        {
+                            name: "components/",
+                            children: [{ name: "Card.astro" }],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={2}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">The mapping</h3>
+                <ul class="font-hand text-[17px] text-ink-dark/90 space-y-1 leading-tight">
+                    <li><CodeInline>pages/index.astro</CodeInline> → <CodeInline>/</CodeInline></li>
+                    <li><CodeInline>pages/about.astro</CodeInline> → <CodeInline>/about</CodeInline></li>
+                    <li><CodeInline>pages/crew/index.astro</CodeInline> → <CodeInline>/crew</CodeInline></li>
+                </ul>
+                <p class="font-sketch text-sm text-ink-soft italic mt-2">Folder = URL prefix. File = leaf.</p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

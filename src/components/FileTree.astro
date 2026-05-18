@@ -1,0 +1,58 @@
+---
+export type Node = {
+    name: string;
+    children?: Node[];
+    isNew?: boolean;
+    isFocus?: boolean;
+    note?: string;
+};
+
+type Props = {
+    root: Node;
+    title?: string;
+    rotate?: number;
+    class?: string;
+};
+
+const { root, title = "src/", rotate = -1, class: cls = "" } = Astro.props;
+
+function flatten(node: Node, depth = 0, isLast = true, prefix = ""): { line: string; node: Node }[] {
+    const children = node.children ?? [];
+    const lines = children.flatMap((child, i) => {
+        const last = i === children.length - 1;
+        const connector = last ? "└── " : "├── ";
+        const nextPrefix = prefix + (last ? "    " : "│   ");
+        const here = { line: `${prefix}${connector}${child.name}`, node: child };
+        const deeper = child.children ? flatten(child, depth + 1, last, nextPrefix) : [];
+        return [here, ...deeper];
+    });
+    return lines;
+}
+
+const lines = flatten(root);
+---
+
+<div
+    class:list={[
+        "relative bg-paper-warm border-2 border-paper-edge shadow-sticky inline-block",
+        cls,
+    ]}
+    style={`transform:rotate(${rotate}deg)`}
+>
+    <span class="absolute -top-3 left-6 w-16 h-5 bg-tape border-x border-tape-edge -rotate-2 pointer-events-none"></span>
+    <span class="absolute -top-3 right-6 w-16 h-5 bg-tape border-x border-tape-edge rotate-2 pointer-events-none"></span>
+
+    <div class="px-5 py-4 font-type text-[14px] leading-[1.7] text-ink-navy whitespace-pre">
+        <div class="font-sketch text-base text-pen-red mb-1">{title}</div>
+        {
+            lines.map(({ line, node }) => (
+                <div class:list={["flex items-center gap-2", node.isNew && "text-pen-green font-bold"]}>
+                    <span>{line}</span>
+                    {node.isNew && <span class="font-sketch text-sm text-pen-red not-italic">← new!</span>}
+                    {node.isFocus && !node.isNew && <span class="font-sketch text-sm text-pen-red">← here</span>}
+                    {node.note && <span class="font-sketch text-sm text-ink-soft italic">— {node.note}</span>}
+                </div>
+            ))
+        }
+    </div>
+</div>

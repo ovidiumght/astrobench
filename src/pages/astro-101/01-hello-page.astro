@@ -1,0 +1,118 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge from "~/components/Challenge.astro";
+import type { ChallengeItem } from "~/components/Challenge.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+
+const lesson = findLesson("01-hello-page")!;
+
+const initialCode = `<html>
+  <h1>Hello, world!</h1>
+  <p>Mission Control speaking.</p>
+</html>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "rename-heading",
+        text: "make the <code>&lt;h1&gt;</code> say something other than <em>world</em>",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceMatches", pattern: "<h1>\\s*\\S" },
+                { kind: "sourceNotMatches", pattern: "<h1>\\s*Hello,\\s*world!?\\s*</h1>" },
+            ],
+        },
+    },
+    {
+        id: "change-paragraph",
+        text: "replace <em>Mission Control speaking</em> with your own paragraph",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceMatches", pattern: "<p>\\s*\\S" },
+                { kind: "sourceNotMatches", pattern: "Mission Control speaking" },
+            ],
+        },
+    },
+    {
+        id: "add-list",
+        text: "add a <code>&lt;ul&gt;</code> with at least two <code>&lt;li&gt;</code> items",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "outputMatches", pattern: "<ul[\\s>]" },
+                { kind: "outputMatches", pattern: "<li[\\s>][^<]*</li>[\\s\\S]*?<li[\\s>]" },
+            ],
+        },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Welcome to Mission Control. Before you fly anyone into space, let's see what's on your desk.</p>
+            <p>&nbsp;</p>
+            <p>An Astro project is just a folder. <Marker>Every file</Marker> in <CodeInline>src/pages/</CodeInline> becomes a URL. The one below — <CodeInline>index.astro</CodeInline> — is your <Marker color="pink">homepage</Marker>.</p>
+            <p>&nbsp;</p>
+            <p>Click in the code below. Change <CodeInline highlight>world</CodeInline> to your own name. Watch the polaroid <Marker>update as you type</Marker>.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="hello-page"
+            file="src/pages/index.astro"
+            note="really editing"
+            code={initialCode}
+        />
+
+        <Prose class="mt-4">
+            <p>That's it. <Marker color="pink">You just wrote a webpage.</Marker> Everything else in this notebook is small extensions of this idea — more files, more components, more places that data can come from.</p>
+            <p>&nbsp;</p>
+            <p>Try breaking things: delete the <CodeInline color="blue">&lt;/h1&gt;</CodeInline>. Add a <CodeInline color="blue">&lt;ul&gt;</CodeInline> with three list items. Hit <CodeInline>↻ reset</CodeInline> when you want to start over.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="hello-page" caption="page 1 ✦ your live preview" rotate={2} frameHeight={240} />
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "pages/",
+                            children: [{ name: "index.astro", isFocus: true, note: "you are here" }],
+                        },
+                        { name: "components/", note: "empty for now" },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">The editor's real</h3>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    What you type runs in a sandbox inside the polaroid. <Marker>Nothing is saved</Marker> — refresh the page and you're back to the original. The <CodeInline>↻ reset</CodeInline> button does the same.
+                </p>
+            </Sticky>
+
+            <Challenge
+                cellId="hello-page"
+                lessonSlug={lesson.slug}
+                title="try this →"
+                items={challenges}
+                completedMessage="lesson 1 cleared!"
+                rotate={-1.5}
+            />
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

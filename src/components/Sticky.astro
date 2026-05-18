@@ -1,0 +1,31 @@
+---
+type Props = {
+    color?: "pink" | "yellow" | "mint" | "blue" | "peach";
+    rotate?: number;
+    class?: string;
+    tape?: boolean;
+    tapeRotate?: number;
+};
+
+const { color = "yellow", rotate = -2, class: cls = "", tape = true, tapeRotate = -2 } = Astro.props;
+
+const bgMap = {
+    pink: "bg-sticky-pink border-sticky-pink-edge/60",
+    yellow: "bg-sticky-yellow border-sticky-yellow-edge/60",
+    mint: "bg-sticky-mint border-sticky-mint-edge/70",
+    blue: "bg-sticky-blue border-sticky-blue-edge/60",
+    peach: "bg-sticky-peach border-sticky-peach-edge/60",
+};
+---
+
+<div class:list={["relative shadow-sticky border p-4", bgMap[color], cls]} style={`transform:rotate(${rotate}deg)`}>
+    {
+        tape && (
+            <span
+                class="absolute -top-3 left-8 w-16 h-5 bg-tape border-x border-tape-edge pointer-events-none"
+                style={`transform:rotate(${tapeRotate}deg)`}
+            />
+        )
+    }
+    <slot />
+</div>

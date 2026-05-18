@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@theme {
+    --color-desk: #e7d9b9;
+    --color-desk-dark: #c8b88a;
+
+    --color-paper-yellow: #fefae0;
+    --color-paper-warm: #fff4c2;
+    --color-paper-edge: #e8d27a;
+    --color-paper-shadow: #d4b94a;
+
+    --color-line: #a8c8e8;
+    --color-line-soft: #cfddee;
+
+    --color-ink-dark: #2a3346;
+    --color-ink-blue: #1e3a8a;
+    --color-ink-navy: #1a2b4a;
+    --color-ink-soft: #4a5878;
+
+    --color-pen-red: #c84545;
+    --color-pen-red-soft: #e68b8b;
+    --color-pen-blue: #2563eb;
+    --color-pen-green: #3a9a4d;
+    --color-pen-purple: #8b5cf6;
+
+    --color-marker-yellow: #ffe666;
+    --color-marker-pink: #ffb7d6;
+    --color-marker-green: #bbf28a;
+
+    --color-sticky-pink: #ffd3e1;
+    --color-sticky-pink-edge: #f4a6c2;
+    --color-sticky-yellow: #fff5a5;
+    --color-sticky-yellow-edge: #e8d870;
+    --color-sticky-mint: #c7f0c2;
+    --color-sticky-mint-edge: #9bd49a;
+    --color-sticky-blue: #cfe7ff;
+    --color-sticky-blue-edge: #8fc1ee;
+    --color-sticky-peach: #ffd4b2;
+    --color-sticky-peach-edge: #e8a06b;
+
+    --color-tape: rgba(255, 220, 130, 0.55);
+    --color-tape-edge: rgba(200, 150, 50, 0.4);
+
+    --font-hand: "Kalam", cursive;
+    --font-title: "Caveat", cursive;
+    --font-sketch: "Patrick Hand", cursive;
+    --font-type: "Courier Prime", monospace;
+
+    --shadow-paper: 0 2px 0 0 #d4b94a, 0 4px 12px 0 rgba(80,60,20,0.18);
+    --shadow-sticky: 2px 3px 0 0 rgba(80,60,20,0.12), 4px 6px 14px 0 rgba(80,60,20,0.18);
+    --shadow-polaroid: 0 3px 0 0 rgba(120,100,60,0.12), 0 12px 28px -6px rgba(80,60,20,0.35);
+    --shadow-code: inset 0 0 0 1px rgba(60,80,120,0.15), 0 1px 0 0 rgba(60,80,120,0.1), 0 4px 14px -4px rgba(60,80,120,0.25);
+
+    --animate-blink: blink 1.05s steps(2) infinite;
+    --animate-wobble: wobble 6s ease-in-out infinite;
+    --animate-float: float 4s ease-in-out infinite;
+
+    @keyframes blink {
+        0%, 50% { opacity: 1; }
+        50.01%, 100% { opacity: 0; }
+    }
+    @keyframes wobble {
+        0%, 100% { transform: rotate(-2deg); }
+        50% { transform: rotate(-0.5deg); }
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+}
+
+html {
+    background: var(--color-desk);
+    background-image:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,0.4), transparent 45%),
+        radial-gradient(circle at 80% 85%, rgba(120,90,30,0.18), transparent 50%);
+}
+
+body {
+    font-family: var(--font-hand);
+    color: var(--color-ink-dark);
+    -webkit-font-smoothing: antialiased;
+}
+
+.ruled {
+    background-image: linear-gradient(to bottom, transparent 31px, var(--color-line) 31px, var(--color-line) 32px, transparent 32px);
+    background-size: 100% 32px;
+    background-position: 0 24px;
+}
+
+.ruled-soft {
+    background-image: linear-gradient(to bottom, transparent 27px, var(--color-line-soft) 27px, var(--color-line-soft) 28px, transparent 28px);
+    background-size: 100% 28px;
+}
+
+::selection {
+    background: rgba(255, 230, 102, 0.8);
+    color: var(--color-ink-dark);
+}
+
+/* ----------------------------------------------- paper-themed scrollbars --
+ * Thin, soft pen-red thumb on a faintly tinted paper track. Used on any
+ * element that may overflow inside the notebook (live preview iframe,
+ * static <pre> code cells, error panels). Reuses the same palette as the
+ * CodeMirror scrollbars defined in src/scripts/editor.ts.
+ */
+.paper-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200, 69, 69, 0.35) transparent;
+}
+.paper-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+.paper-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px dashed rgba(42, 51, 70, 0.1);
+    border-top: 1px dashed rgba(42, 51, 70, 0.1);
+}
+.paper-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(200, 69, 69, 0.35);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+.paper-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(200, 69, 69, 0.65);
+}
+.paper-scrollbar::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-pen-red);
+}
+.paper-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+}

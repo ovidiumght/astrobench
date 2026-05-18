@@ -1,0 +1,138 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import FileTree from "~/components/FileTree.astro";
+import RunButton from "~/components/RunButton.astro";
+import { findLesson, totalXp } from "~/lib/lessons";
+
+const lesson = findLesson("11-take-it-live")!;
+const chapterTotal = totalXp("astro-101");
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Look at what you built. <Marker>A homepage</Marker> with a live grid. <Marker color="pink">A profile page</Marker> for every astronaut. <Marker color="green">An About page</Marker>. Real data, real routes, real HTML.</p>
+            <p>&nbsp;</p>
+            <p>Hit <span class="font-title text-pen-red text-[26px]">Publish</span> and astrobench gives you a real URL. Share it. Your friend opens it. They see your site. They click "fork" — and they're on lesson 1.</p>
+            <p>&nbsp;</p>
+            <p>The loop closes.</p>
+        </Prose>
+
+        <div class="relative my-8 max-w-[640px]">
+            <span class="absolute -top-3 left-10 w-24 h-6 bg-tape border-x border-tape-edge -rotate-2 z-10 pointer-events-none"></span>
+            <span class="absolute -top-3 right-12 w-24 h-6 bg-tape border-x border-tape-edge rotate-2 z-10 pointer-events-none"></span>
+
+            <div class="bg-white border-2 border-ink-dark/12 shadow-code rounded-sm p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="grid h-5 w-5 place-items-center rounded-full bg-pen-green text-white font-pixel text-sm leading-none">✓</span>
+                    <span class="font-title text-[24px] text-ink-dark leading-none">your site is live</span>
+                </div>
+
+                <p class="font-sketch text-base text-ink-soft mb-3">at this URL:</p>
+
+                <div class="bg-paper-warm border-2 border-dashed border-pen-red/40 px-4 py-3 mb-4">
+                    <p class="font-type text-[16px] text-ink-navy break-all">
+                        https://<span class="text-pen-red">mission-control</span>.astrobench.app
+                    </p>
+                </div>
+
+                <p class="font-sketch text-sm text-ink-soft mb-3">routes that just shipped:</p>
+                <ul class="font-type text-[13px] text-ink-navy mb-4 space-y-1">
+                    <li>· <span class="text-pen-blue">/</span> — homepage with crew grid</li>
+                    <li>· <span class="text-pen-blue">/about</span> — about Mission Control</li>
+                    <li>· <span class="text-pen-blue">/crew/[name]</span> — one per astronaut</li>
+                </ul>
+
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button class="font-sketch text-base bg-pen-green/15 border-2 border-pen-green text-pen-green px-3 py-1.5 rounded cursor-pointer">copy link</button>
+                    <button class="font-sketch text-base bg-pen-blue/15 border-2 border-pen-blue text-pen-blue px-3 py-1.5 rounded cursor-pointer">tweet it</button>
+                    <button class="font-sketch text-base bg-pen-red/15 border-2 border-pen-red text-pen-red px-3 py-1.5 rounded cursor-pointer">pin to journal</button>
+                </div>
+            </div>
+        </div>
+
+        <Prose class="mt-4">
+            <p>Every published tutorial gets a <Marker color="pink">"fork this notebook"</Marker> button at the bottom. Whoever opens it can start their own copy in one click.</p>
+            <p>&nbsp;</p>
+            <p>That's how the next astronaut learns. <span class="italic">From you.</span></p>
+        </Prose>
+
+        <div class="mt-8 flex flex-wrap gap-3 items-center">
+            <RunButton label="🎉 start Chapter 2" href="/mission-log/" />
+            <a href="/" class="font-sketch text-lg text-ink-soft hover:text-ink-dark px-3 py-1.5 cursor-pointer">back to Ch. 1 index</a>
+        </div>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="✦ ★ Mission Commander unlocked" rotate={3}>
+                <div class="bg-[#0d0b2e] text-[#fef3c7] rounded-xl p-3 font-[system-ui]">
+                    <p class="text-[10px] uppercase tracking-wider text-[#ffd966] mb-1">YOUR SITE</p>
+                    <p class="text-[14px] font-bold mb-1">Mission Control</p>
+                    <p class="text-[10px] opacity-75 mb-2">6 astronauts · 4 in orbit</p>
+                    <div class="space-y-1">
+                        {
+                            [
+                                ["Mae", "orbit"],
+                                ["Ovidiu", "orbit"],
+                                ["Sergei", "earth"],
+                            ].map(([n, s]) => (
+                                <div class="bg-[#1f1b3d] rounded px-2 py-1 flex items-center gap-1.5 text-[9px]">
+                                    <span class="font-bold flex-1">{n}</span>
+                                    <span>{s === "orbit" ? "🚀" : "🌍"}</span>
+                                </div>
+                            ))
+                        }
+                    </div>
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">mission-control.astrobench.app</p>
+            </Polaroid>
+
+            <FileTree
+                title="src/ — final"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "pages/",
+                            children: [
+                                { name: "index.astro" },
+                                { name: "about.astro" },
+                                {
+                                    name: "crew/",
+                                    children: [{ name: "[name].astro" }],
+                                },
+                            ],
+                        },
+                        {
+                            name: "components/",
+                            children: [{ name: "Card.astro" }],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="mint" rotate={-2}>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-sketch text-[13px] text-pen-red uppercase tracking-wider">★ chapter complete!</span>
+                </div>
+                <h4 class="font-title text-[26px] leading-tight text-ink-dark">Mission Commander</h4>
+                <p class="font-hand text-[16px] text-ink-soft leading-tight">+{lesson.xp} XP · {chapterTotal} total · 6 badges</p>
+            </Sticky>
+
+            <a href="/mission-log/" class="block no-underline">
+                <Sticky color="peach" rotate={2}>
+                    <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">What's next? →</h3>
+                    <p class="font-hand text-[17px] text-ink-dark/90 leading-tight mb-2">
+                        <Marker color="pink">Ch. 2: Mission Log.</Marker> Layouts, content, islands, deployment.
+                    </p>
+                    <p class="font-sketch text-base text-pen-green italic">your site gets a launch button.</p>
+                </Sticky>
+            </a>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

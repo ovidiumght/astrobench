@@ -1,0 +1,200 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, str, comment, num, string, open, close, a, expr, tag } from "~/lib/hl";
+
+const lesson = findLesson("08-search-the-logs")!;
+
+const islandCode = `${kw("import")} ${punct("{")} ${ident("useEffect")}${punct(",")} ${ident("useState")} ${punct("}")} ${kw("from")} ${str("\"preact/hooks\"")}${punct(";")}
+
+${kw("type")} ${ident("Log")} ${punct("=")} ${punct("{")} ${ident("id")}${punct(":")} ${ident("string")}${punct(";")} ${ident("title")}${punct(":")} ${ident("string")}${punct(";")} ${ident("author")}${punct(":")} ${ident("string")} ${punct("};")}
+
+${kw("export default function")} ${ident("Search")}${punct("()")} ${punct("{")}
+&nbsp;&nbsp;${kw("const")} ${punct("[")}${ident("logs")}${punct(",")} ${ident("setLogs")}${punct("] =")} ${ident("useState")}${punct("&lt;")}${ident("Log")}${punct("[]&gt;([]);")}
+&nbsp;&nbsp;${kw("const")} ${punct("[")}${ident("q")}${punct(",")} ${ident("setQ")}${punct("] =")} ${ident("useState")}${punct("(")}${string("")}${punct(");")}
+
+&nbsp;&nbsp;${comment("// fetch once, on mount")}
+&nbsp;&nbsp;${ident("useEffect")}${punct("(() =&gt; {")}
+&nbsp;&nbsp;&nbsp;&nbsp;${ident("fetch")}${punct("(")}${string("/api/logs.json")}${punct(")")}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${punct(".")}${ident("then")}${punct("((")}${ident("r")}${punct(") =&gt;")} ${ident("r")}${punct(".")}${ident("json")}${punct("())")}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${punct(".")}${ident("then")}${punct("(")}${ident("setLogs")}${punct(");")}
+&nbsp;&nbsp;${punct("}, []);")}
+
+&nbsp;&nbsp;${kw("const")} ${ident("filtered")} ${punct("=")} ${ident("logs")}${punct(".")}${ident("filter")}${punct("((")}${ident("l")}${punct(") =&gt;")}
+&nbsp;&nbsp;&nbsp;&nbsp;${ident("l")}${punct(".")}${ident("title")}${punct(".")}${ident("toLowerCase")}${punct("().")}${ident("includes")}${punct("(")}${ident("q")}${punct(".")}${ident("toLowerCase")}${punct("()))")}${punct(";")}
+
+&nbsp;&nbsp;${kw("return")} ${punct("(")}
+&nbsp;&nbsp;&nbsp;&nbsp;${open("div")}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("input")} ${a("value", "{q}")} ${a("onInput", "{(e) =&gt; setQ(e.currentTarget.value)}")} ${a("placeholder", "search…")} ${punct("/&gt;")}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${open("ul")}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${expr(`${ident("filtered")}${punct(".")}${ident("map")}${punct("((")}${ident("l")}${punct(") =&gt;")} ${punct("&lt;")}${tag("li")} ${a("key", "{l.id}")}${punct("&gt;")}${expr(`${ident("l")}${punct(".")}${ident("title")}`)}${punct("&lt;/")}${tag("li")}${punct("&gt;)")}`)}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${close("ul")}
+&nbsp;&nbsp;&nbsp;&nbsp;${close("div")}
+&nbsp;&nbsp;${punct(");")}
+${punct("}")}`;
+
+const pageCode = `${kw("---")}
+${kw("import")} ${ident("Layout")} ${kw("from")} ${str("\"~/layouts/Layout.astro\"")}${punct(";")}
+${kw("import")} ${ident("Search")} ${kw("from")} ${str("\"~/components/Search.tsx\"")}${punct(";")}
+${kw("---")}
+
+${punct("&lt;")}${tag("Layout")}${a("title", "Mission Log")}${punct("&gt;")}
+&nbsp;&nbsp;${open("h1")}Mission Log${close("h1")}
+&nbsp;&nbsp;${punct("&lt;")}${tag("Search")} ${a("client:visible")} ${punct("/&gt;")}
+${punct("&lt;/")}${tag("Layout")}${punct("&gt;")}`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Time to <Marker color="pink">tie it together</Marker>. Your content collection lives at build time. Your API endpoint exposes it as JSON. Your island gives users a way to search it.</p>
+            <p>&nbsp;</p>
+            <p>The island fetches your endpoint on mount, holds the logs in state, and filters them as the user types.</p>
+        </Prose>
+
+        <CodeCell file="src/components/Search.tsx" note="the search island" highlightLine={9} code={islandCode} />
+
+        <Prose class="mt-4">
+            <p>And drop it on the logs index — <CodeInline color="red">client:visible</CodeInline> because it's not above the fold for everyone:</p>
+        </Prose>
+
+        <CodeCell file="src/pages/logs/index.astro" highlightLine={7} code={pageCode} />
+
+        <Prose class="mt-4">
+            <p>This little component is the <Marker color="pink">whole client-side data story</Marker>. Page is static HTML. Island hydrates when visible. Island fetches your own endpoint. Island re-renders on input.</p>
+            <p>&nbsp;</p>
+            <p>For a thousand logs you'd swap <CodeInline>filter()</CodeInline> for a real search index. For ten, this is fine — and it's been fine for a million sites.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="page 8 ✦ ★ unlocked: hyperdrive" rotate={2.5}>
+                <div data-search-mock class="bg-white border border-ink-dark/15 rounded-md font-[system-ui] px-3 py-3">
+                    <h3 class="text-[14px] font-bold mb-2 text-ink-dark">Mission Log</h3>
+                    <input
+                        type="text"
+                        data-search-input
+                        value="launch"
+                        placeholder="search…"
+                        class="font-[system-ui] text-[11px] bg-paper-warm/60 border border-ink-dark/15 px-2 py-1 rounded w-full mb-2 outline-none focus:border-pen-red/50 focus:bg-white"
+                    />
+                    <ul data-search-results class="space-y-1 text-[10px] min-h-[88px]"></ul>
+                    <p data-search-meta class="font-sketch text-[9px] text-pen-green italic mt-1">2 of 4 match.</p>
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">type. find. pop.</p>
+            </Polaroid>
+
+            <Sticky color="yellow" rotate={-2}>
+                <h3 class="font-title text-[24px] text-ink-dark leading-none mb-2">The pipeline</h3>
+                <ol class="font-hand text-[15px] text-ink-dark/90 space-y-1 leading-tight list-decimal pl-4">
+                    <li><CodeInline>.md</CodeInline> files (your content)</li>
+                    <li>content collection (typed)</li>
+                    <li><CodeInline>/api/logs.json</CodeInline> (data)</li>
+                    <li><CodeInline>Search.tsx</CodeInline> (island)</li>
+                    <li>user types → results update</li>
+                </ol>
+                <p class="font-sketch text-sm text-ink-soft italic mt-2">five layers, one feature.</p>
+            </Sticky>
+
+            <Sticky color="peach" rotate={1.5}>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-sketch text-[13px] text-pen-red uppercase tracking-wider">★ unlocked!</span>
+                </div>
+                <h4 class="font-title text-[26px] leading-tight text-ink-dark">Hyperdrive</h4>
+                <p class="font-hand text-[16px] text-ink-soft leading-tight">+110 XP · client meets server</p>
+            </Sticky>
+
+            <Sticky color="mint" rotate={-1.5}>
+                <h3 class="font-title text-[22px] text-ink-dark leading-none mb-1">Bonus level</h3>
+                <p class="font-hand text-[15px] text-ink-dark/90 leading-tight">
+                    Pass <CodeInline>logs</CodeInline> as a prop instead of fetching. Astro <Marker>serializes</Marker> props from server to island — no extra request needed. Faster, simpler, perfect for static sites.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    /*
+     * The polaroid mock-up of the Search island. The page doesn't ship a real
+     * Preact runtime — this is just a stylized preview — but the search box
+     * ought to actually filter the list when you type in it. Vanilla JS only,
+     * no bundle weight, no framework dependency.
+     */
+    type Log = { title: string; author: string };
+
+    const logs: Log[] = [
+        { title: "Launch day", author: "Mae" },
+        { title: "Halfway to launch window", author: "Sergei" },
+        { title: "First EVA", author: "Yui" },
+        { title: "Splashdown", author: "Ovidiu" },
+    ];
+
+    const container = document.querySelector<HTMLElement>("[data-search-mock]");
+    const input = container?.querySelector<HTMLInputElement>("[data-search-input]");
+    const results = container?.querySelector<HTMLUListElement>("[data-search-results]");
+    const meta = container?.querySelector<HTMLParagraphElement>("[data-search-meta]");
+
+    const escape = (s: string) =>
+        s.replace(/[&<>"']/g, (c) =>
+            c === "&" ? "&amp;" : c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === '"' ? "&quot;" : "&#39;",
+        );
+
+    /* Highlight every case-insensitive occurrence of `q` in `text` with a blue,
+       bold span — same look the static markup used for the pre-rendered demo. */
+    function highlight(text: string, q: string): string {
+        if (!q) return escape(text);
+        const lower = text.toLowerCase();
+        const lowerQ = q.toLowerCase();
+        let out = "";
+        let i = 0;
+        while (i <= text.length) {
+            const idx = lower.indexOf(lowerQ, i);
+            if (idx === -1) {
+                out += escape(text.slice(i));
+                break;
+            }
+            out += escape(text.slice(i, idx));
+            out += `<span class="font-bold text-pen-blue">${escape(text.slice(idx, idx + q.length))}</span>`;
+            i = idx + q.length;
+        }
+        return out;
+    }
+
+    function render(q: string) {
+        if (!results || !meta) return;
+        const trimmed = q.trim();
+        const lowerQ = trimmed.toLowerCase();
+        let matchCount = 0;
+
+        const html = logs.map((log) => {
+            const matches = lowerQ === "" || log.title.toLowerCase().includes(lowerQ);
+            if (matches) matchCount += 1;
+            return matches
+                ? `<li class="bg-yellow-100/60 px-2 py-1 rounded border border-yellow-300/40">${highlight(log.title, trimmed)} · ${escape(log.author)}</li>`
+                : `<li class="text-ink-soft/50 px-2 py-1">${escape(log.title)} · ${escape(log.author)}</li>`;
+        });
+
+        results.innerHTML = html.join("");
+        meta.textContent =
+            trimmed === ""
+                ? `${logs.length} logs total.`
+                : matchCount === 0
+                    ? `no matches for "${trimmed}".`
+                    : `${matchCount} of ${logs.length} match.`;
+    }
+
+    // Idempotency guard — same reason as the hype button: <script> can re-run
+    // during dev HMR or Astro view transitions and double up listeners.
+    if (container && input && results && meta && !container.dataset.wired) {
+        container.dataset.wired = "1";
+        render(input.value);
+        input.addEventListener("input", () => render(input.value));
+    }
+</script>

@@ -1,0 +1,73 @@
+---
+type Props = {
+    cellId: string;
+    file?: string;
+    note?: string;
+    code: string;
+    minHeight?: number;
+    class?: string;
+};
+
+const { cellId, file = "index.astro", note, code, minHeight = 160, class: cls = "" } = Astro.props;
+---
+
+<div
+    class:list={["relative my-10 group/cell", cls]}
+    data-live-cell={cellId}
+    data-live-initial={code}
+>
+    <span class="absolute -top-3 left-6 w-20 h-5 bg-tape border-x border-tape-edge -rotate-2 z-10 pointer-events-none"></span>
+    <span class="absolute -top-3 right-12 w-20 h-5 bg-tape border-x border-tape-edge rotate-2 z-10 pointer-events-none"></span>
+
+    <div class="relative bg-white border-2 border-ink-dark/12 shadow-code rounded-sm">
+        <div class="flex items-center gap-2 border-b-2 border-dashed border-ink-dark/15 px-4 py-2 bg-paper-yellow/40">
+            <span class="grid h-4 w-4 place-items-center font-sketch text-pen-red text-sm -rotate-[4deg]">✦</span>
+            <span class="font-sketch text-base text-ink-soft">{file}</span>
+            {note && <span class="font-sketch text-sm text-pen-red/80 italic">— {note}</span>}
+
+            <span class="ml-auto flex items-center gap-3">
+                <span data-live-status class="font-sketch text-sm text-pen-green flex items-center gap-1.5">
+                    <span class="inline-block h-2 w-2 rounded-full bg-pen-green"></span>
+                    <span data-live-status-text>live</span>
+                </span>
+                <button
+                    type="button"
+                    data-live-reset
+                    class="font-sketch text-sm text-ink-soft hover:text-pen-red cursor-pointer"
+                    title="restore the original code"
+                >
+                    ↻ reset
+                </button>
+            </span>
+        </div>
+
+        <div
+            data-live-cell-mount
+            class="live-cell-mount"
+            style={`min-height:${minHeight}px;`}
+        ></div>
+
+        <noscript>
+            <pre class="px-4 py-3 font-type text-[14.5px] text-ink-navy m-0 whitespace-pre overflow-x-auto bg-white"><code>{code}</code></pre>
+            <p class="px-4 pb-3 font-sketch text-sm text-pen-red italic">
+                ⚠ JavaScript is disabled. The editor needs it to highlight and run your code.
+            </p>
+        </noscript>
+    </div>
+</div>
+
+<style>
+    .live-cell-mount {
+        position: relative;
+    }
+    .live-cell-mount .cm-editor {
+        height: 100%;
+    }
+    .live-cell-mount .cm-scroller {
+        line-height: 1.85;
+    }
+</style>
+
+<script>
+    import "~/scripts/live-cells";
+</script>

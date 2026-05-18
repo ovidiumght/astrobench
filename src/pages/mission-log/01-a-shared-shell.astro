@@ -1,0 +1,185 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+import { open, close, a, kw, ident, punct, expr, tag } from "~/lib/hl";
+
+const lesson = findLesson("01-a-shared-shell")!;
+
+const layoutCode = `${kw("---")}
+${kw("const")} ${punct("{")} ${ident("title")} ${punct("}")} ${punct("=")} ${ident("Astro")}${punct(".")}${ident("props")}${punct(";")}
+${kw("---")}
+
+${punct("&lt;!doctype html&gt;")}
+${open("html", a("lang", "en"))}
+&nbsp;&nbsp;${open("head")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("meta")}${a("charset", "UTF-8")} ${punct("/&gt;")}
+&nbsp;&nbsp;&nbsp;&nbsp;${open("title")}${expr(ident("title"))} · Mission Control${close("title")}
+&nbsp;&nbsp;${close("head")}
+&nbsp;&nbsp;${open("body")}
+&nbsp;&nbsp;&nbsp;&nbsp;${open("header")}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${open("a", a("href", "/"))}🛰 Mission Control${close("a")}
+&nbsp;&nbsp;&nbsp;&nbsp;${close("header")}
+
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("slot")} ${punct("/&gt;")}
+
+&nbsp;&nbsp;&nbsp;&nbsp;${open("footer")}© 2026 Mission Control${close("footer")}
+&nbsp;&nbsp;${close("body")}
+${close("html")}`;
+
+const indexCode = `---
+import Layout from "~/layouts/Layout.astro";
+import Card from "~/components/Card.astro";
+---
+
+<Layout title="Mission Control">
+    <h1>Active crew</h1>
+    <Card name="Mae" mission="Endeavour" />
+    <Card name="Ovidiu" mission="Apollo 42" />
+</Layout>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "add-h3",
+        text: "add an <code>&lt;h3&gt;</code> after the cards (a tagline, a sign-off — anything)",
+        check: { kind: "outputMatches", pattern: "<h3[^>]*>[^<]+</h3>" },
+    },
+    {
+        id: "change-title",
+        text: "change the Layout's <code>title</code> prop to something else",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "sourceMatches", pattern: "<Layout[^>]*\\btitle\\s*=\\s*['\"]" },
+                { kind: "sourceNotMatches", pattern: "<Layout[^>]*\\btitle\\s*=\\s*['\"]Mission\\s*Control['\"]" },
+            ],
+        },
+    },
+    {
+        id: "add-card",
+        text: "add a third <code>&lt;Card&gt;</code> inside the Layout",
+        check: { kind: "outputMatches", pattern: "(class=\"card\"[\\s\\S]*?){3}" },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Your site has three routes now: <CodeInline>/</CodeInline>, <CodeInline>/about</CodeInline>, <CodeInline>/crew/[name]</CodeInline>. Each one used to carry its own <CodeInline color="blue">&lt;html&gt;</CodeInline>, <CodeInline color="blue">&lt;head&gt;</CodeInline>, header, footer.</p>
+            <p>&nbsp;</p>
+            <p>That's <Marker>three copies</Marker> of the same wrapper. The day you change the logo, you change it three times. <Marker color="pink">No.</Marker></p>
+            <p>&nbsp;</p>
+            <p>Astro has <CodeInline>src/layouts/</CodeInline> for exactly this. A layout is a component with a <CodeInline color="blue">&lt;slot /&gt;</CodeInline> — pages plug their content in.</p>
+        </Prose>
+
+        <CodeCell file="src/layouts/Layout.astro" note="the new shell — pre-built for you" highlightLine={9} code={layoutCode} />
+
+        <Prose class="mt-4">
+            <p>Now your <CodeInline>index.astro</CodeInline> just wraps its content in <CodeInline color="blue">&lt;Layout&gt;</CodeInline>. <Marker>The shell disappears from every page.</Marker></p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch2-l1"
+            file="src/pages/index.astro"
+            note="layout wraps everything"
+            code={indexCode}
+            minHeight={260}
+        />
+
+        <Prose class="mt-4">
+            <p>Do the same for <CodeInline>about.astro</CodeInline> and <CodeInline>crew/[name].astro</CodeInline>. <Marker color="pink">One shell, three pages.</Marker> Change the footer once.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch2-l1" caption="page 1 ✦ one shell, every page" rotate={2.5} frameHeight={300} />
+
+            <Challenge cellId="ch2-l1" lessonSlug={lesson.slug} title="try this →" completedMessage="★ architect unlocked!" items={challenges} rotate={-1.5} />
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "layouts/",
+                            isNew: true,
+                            children: [{ name: "Layout.astro", isNew: true }],
+                        },
+                        {
+                            name: "pages/",
+                            children: [
+                                { name: "index.astro", note: "uses Layout" },
+                                { name: "about.astro", note: "uses Layout" },
+                                {
+                                    name: "crew/",
+                                    children: [{ name: "[name].astro", note: "uses Layout" }],
+                                },
+                            ],
+                        },
+                        {
+                            name: "components/",
+                            children: [{ name: "Card.astro" }],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">Layouts vs. components?</h3>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    They're <Marker>the same thing</Marker> — both are <CodeInline>.astro</CodeInline> files with a <CodeInline color="blue">&lt;slot /&gt;</CodeInline>. The folder is a hint to humans, not Astro.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    import { registerCell } from "~/runtime/registry";
+
+    const escape = (s: unknown) =>
+        String(s ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+    registerCell("ch2-l1", {
+        components: {
+            Layout: (props, children) => `
+                <div class="shell">
+                    <header class="shell-header"><a href="#">🛰 Mission Control</a> <span class="shell-title">${escape(props.title ?? "")}</span></header>
+                    <main class="shell-main">${children}</main>
+                    <footer class="shell-footer">© 2026 Mission Control</footer>
+                </div>
+            `,
+            Card: (props) =>
+                `<div class="card"><h1>Hello, ${escape(props.name)}!</h1><p>${escape(props.mission)}</p></div>`,
+        },
+        baseStyles: `
+            body { margin: 0; padding: 0; font-family: system-ui; }
+            .shell { background: white; }
+            .shell-header { background: #fef3c7; padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.1); display:flex; align-items:center; gap: 12px; }
+            .shell-header a { color: #1a1a2e; text-decoration: none; font-weight: bold; font-size: 13px; }
+            .shell-title { color: #4a5878; font-size: 12px; }
+            .shell-main { padding: 12px 14px; }
+            .shell-main h1 { font-size: 18px; margin: 0 0 8px; }
+            .shell-main h3 { font-size: 13px; margin: 10px 0 4px; color: #4a5878; font-weight: 600; }
+            .shell-footer { background: rgba(254,243,199,0.5); padding: 6px 12px; border-top: 1px solid rgba(0,0,0,0.08); color: #4a5878; font-size: 10px; }
+            .card { background: #0d0b2e; color: #fef3c7; padding: 8px 12px; border-radius: 8px; font-family: system-ui; margin: 6px 0 0; }
+            .card h1 { font-size: 14px; margin: 0 0 2px; font-weight: bold; }
+            .card p { font-size: 11px; margin: 0; opacity: 0.85; }
+        `,
+    });
+</script>

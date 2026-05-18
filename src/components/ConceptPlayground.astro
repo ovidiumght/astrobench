@@ -1,0 +1,267 @@
+---
+/**
+ * Live playground for the /explore page. A single modal in the DOM gets
+ * populated on demand when a [data-concept-play] button is clicked: we look
+ * up the concept's `play` config, register it with the live-cells runtime,
+ * inject editor + iframe markup, then call wireAll() to bring it to life.
+ *
+ * Re-opening the same concept reuses its saved cellId so user edits persist
+ * across sessions (the same mechanism lessons use). Closing the modal tears
+ * down the cell DOM so we don't keep N CodeMirror instances alive.
+ */
+---
+
+<div
+    data-concept-modal-root
+    class="hidden fixed inset-0 z-40 px-3 sm:px-6 py-4 sm:py-8"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Concept playground"
+>
+    <div data-concept-modal-backdrop class="absolute inset-0 bg-ink-dark/45 backdrop-blur-[2px]"></div>
+
+    <div
+        data-concept-modal-shell
+        class="relative mx-auto max-w-[1100px] h-full max-h-[92vh] bg-paper-yellow border-2 border-paper-edge rounded shadow-paper overflow-hidden flex flex-col"
+    >
+        <header class="flex items-center gap-3 px-4 sm:px-5 py-3 border-b-2 border-dashed border-ink-dark/15 bg-paper-warm/40">
+            <span data-concept-modal-cat-dot class="inline-block h-2.5 w-2.5 rounded-full bg-ink-dark/40 flex-none"></span>
+            <span data-concept-modal-cat class="font-sketch text-[11px] uppercase tracking-[0.2em] text-ink-soft">—</span>
+            <h2 data-concept-modal-title class="font-title text-[24px] sm:text-[28px] text-ink-dark leading-none truncate">—</h2>
+
+            <span class="ml-auto flex items-center gap-3">
+                <a
+                    data-concept-modal-lesson
+                    href="#"
+                    class="hidden font-sketch text-[13px] text-pen-red/85 hover:text-pen-red cursor-pointer"
+                >→ lesson</a>
+                <button
+                    type="button"
+                    data-concept-modal-reset
+                    class="font-sketch text-sm text-ink-soft hover:text-pen-red cursor-pointer"
+                    title="restore the seed code"
+                >↻ reset</button>
+                <button
+                    type="button"
+                    data-concept-modal-close
+                    aria-label="close playground"
+                    class="font-sketch text-base text-ink-soft hover:text-pen-red px-2 cursor-pointer"
+                >✕</button>
+            </span>
+        </header>
+
+        <p
+            data-concept-modal-blurb
+            class="px-4 sm:px-5 py-2 font-sketch text-sm text-ink-soft/85 italic border-b border-ink-dark/8 bg-white"
+        >—</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-5 flex-1 overflow-hidden">
+            <div class="bg-white border-2 border-ink-dark/12 rounded-sm overflow-hidden flex flex-col min-h-0">
+                <div class="flex items-center gap-2 border-b border-ink-dark/10 px-3 py-1.5 bg-paper-yellow/35 flex-none">
+                    <span class="font-sketch text-pen-red -rotate-[4deg]">✦</span>
+                    <span class="font-sketch text-sm text-ink-soft">index.astro</span>
+                    <span class="ml-auto font-sketch text-[11px] text-pen-green flex items-center gap-1">
+                        <span data-concept-modal-status-dot class="inline-block h-2 w-2 rounded-full bg-pen-green"></span>
+                        <span data-concept-modal-status-text>live</span>
+                    </span>
+                </div>
+                <div data-concept-modal-cell-host class="flex-1 overflow-hidden relative"></div>
+            </div>
+
+            <div class="bg-white border-2 border-ink-dark/12 rounded-sm overflow-hidden flex flex-col min-h-0">
+                <div class="flex items-center gap-2 border-b border-ink-dark/10 px-3 py-1.5 bg-paper-yellow/35 flex-none">
+                    <span class="font-sketch text-pen-red">▶</span>
+                    <span class="font-sketch text-sm text-ink-soft">preview</span>
+                </div>
+                <div data-concept-modal-preview-host class="flex-1 overflow-hidden relative"></div>
+            </div>
+        </div>
+
+        <footer class="px-4 sm:px-5 py-2 border-t border-ink-dark/10 bg-paper-warm/40 font-sketch text-[12px] text-ink-soft/80 flex items-center gap-3">
+            <span>edits saved automatically</span>
+            <span class="ml-auto">
+                press <kbd class="font-type bg-white border border-ink-dark/15 rounded px-1">esc</kbd> to close
+            </span>
+        </footer>
+    </div>
+</div>
+
+<style>
+    /*
+     * CodeMirror fills the available height of its mount. We rely on the
+     * grid cells having min-h-0 / flex layout so the editor scrolls inside
+     * its column rather than blowing out the modal.
+     */
+    [data-concept-modal-cell-host] .cm-editor {
+        height: 100%;
+    }
+    [data-concept-modal-cell-host] .cm-scroller {
+        line-height: 1.75;
+    }
+</style>
+
+<script>
+    import { concepts, categoryMeta } from "~/lib/concepts";
+    import { findLesson, lessonUrl } from "~/lib/lessons";
+    import { registerCell } from "~/runtime/registry";
+    import { wireAll } from "~/scripts/live-cells";
+    import { clearCellContent } from "~/scripts/progress";
+
+    const root = document.querySelector<HTMLElement>("[data-concept-modal-root]");
+    const backdrop = document.querySelector<HTMLElement>("[data-concept-modal-backdrop]");
+    const closeBtn = document.querySelector<HTMLButtonElement>("[data-concept-modal-close]");
+    const resetBtn = document.querySelector<HTMLButtonElement>("[data-concept-modal-reset]");
+    const titleEl = document.querySelector<HTMLElement>("[data-concept-modal-title]");
+    const blurbEl = document.querySelector<HTMLElement>("[data-concept-modal-blurb]");
+    const catEl = document.querySelector<HTMLElement>("[data-concept-modal-cat]");
+    const catDotEl = document.querySelector<HTMLElement>("[data-concept-modal-cat-dot]");
+    const cellHost = document.querySelector<HTMLElement>("[data-concept-modal-cell-host]");
+    const previewHost = document.querySelector<HTMLElement>("[data-concept-modal-preview-host]");
+    const lessonLink = document.querySelector<HTMLAnchorElement>("[data-concept-modal-lesson]");
+
+    if (
+        root && backdrop && closeBtn && resetBtn &&
+        titleEl && blurbEl && catEl && catDotEl &&
+        cellHost && previewHost && lessonLink
+    ) {
+        let currentId: string | null = null;
+        let isOpen = false;
+
+        /*
+         * Base CSS injected into the preview iframe. Same approach as the
+         * existing LivePreview component — kept inline because srcdoc is
+         * whitespace-sensitive and we want this single-file.
+         */
+        const previewBaseStyles =
+            "html,body{margin:0;padding:14px 16px;font-family:system-ui,sans-serif;color:#1a1a2e;line-height:1.5;background:#fff;scrollbar-width:thin;scrollbar-color:rgba(200,69,69,0.35) transparent}" +
+            "h1{font-size:28px;line-height:1.1;margin:0 0 8px}h2{font-size:22px;line-height:1.2;margin:0 0 6px}h3{font-size:18px;margin:0 0 4px}p{margin:0 0 10px}a{color:#0066cc}" +
+            "ul{padding-left:20px;margin:0 0 10px}li{margin:0 0 4px}" +
+            "::-webkit-scrollbar{width:10px;height:10px}" +
+            "::-webkit-scrollbar-track{background:transparent}" +
+            "::-webkit-scrollbar-thumb{background-color:rgba(200,69,69,0.35);border:2px solid transparent;border-radius:999px;background-clip:padding-box}";
+        const previewSrcDoc = `<!doctype html><html><head><style>${previewBaseStyles}</style></head><body></body></html>`;
+
+        function escapeAttr(s: string): string {
+            return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function open(conceptId: string) {
+            const concept = concepts.find((c) => c.id === conceptId);
+            if (!concept || !concept.play) return;
+
+            currentId = conceptId;
+            isOpen = true;
+
+            const meta = categoryMeta[concept.category];
+            titleEl!.textContent = concept.title;
+            blurbEl!.textContent = concept.blurb;
+            catEl!.textContent = meta.label;
+
+            /*
+             * Swap the category dot color. We can't class:list at runtime
+             * cleanly here, so we strip the previous bg- class on each open
+             * and re-add the one we want.
+             */
+            catDotEl!.className = "inline-block h-2.5 w-2.5 rounded-full flex-none " + meta.dot;
+
+            const lesson = concept.lessonSlug ? findLesson(concept.lessonSlug) : null;
+            if (lesson) {
+                lessonLink!.href = lessonUrl(lesson);
+                lessonLink!.textContent = `→ Lesson ${lesson.step} · ${lesson.title}`;
+                lessonLink!.classList.remove("hidden");
+            } else {
+                lessonLink!.classList.add("hidden");
+            }
+
+            const cellId = `concept-${concept.id}`;
+
+            /*
+             * Re-register cell config each open so we always reflect the
+             * latest play config (cheap, idempotent for static data).
+             */
+            registerCell(cellId, {
+                props: concept.play.props,
+                params: concept.play.params,
+                scope: concept.play.scope,
+            });
+
+            const escapedCode = escapeAttr(concept.play.code);
+
+            cellHost!.innerHTML =
+                `<div data-live-cell="${cellId}" data-live-initial="${escapedCode}" class="h-full flex flex-col">` +
+                `<div data-live-cell-mount class="live-cell-mount flex-1 min-h-0"></div>` +
+                `</div>`;
+
+            previewHost!.innerHTML =
+                `<div data-live-preview="${cellId}" class="absolute inset-0">` +
+                `<iframe data-live-preview-frame sandbox="allow-same-origin" class="block w-full h-full" style="border:0;background:#fff;" srcdoc='${previewSrcDoc.replace(/'/g, "&#39;")}'></iframe>` +
+                `<div data-live-preview-error class="hidden absolute inset-0 bg-pen-red/10 border-2 border-pen-red border-dashed p-3 font-sketch text-pen-red text-sm overflow-auto paper-scrollbar"></div>` +
+                `</div>`;
+
+            root!.classList.remove("hidden");
+            /*
+             * Wire after the next frame so the iframe has a chance to load
+             * its srcdoc — wireAll calls updatePreview which writes into the
+             * iframe document and silently no-ops if it's not ready yet.
+             */
+            requestAnimationFrame(() => {
+                wireAll();
+            });
+        }
+
+        function close() {
+            isOpen = false;
+            root!.classList.add("hidden");
+            /*
+             * Tear down the editor + iframe so we don't keep CodeMirror
+             * instances alive between sessions. Re-opens are fast because
+             * concept data is already in memory.
+             */
+            cellHost!.innerHTML = "";
+            previewHost!.innerHTML = "";
+            currentId = null;
+        }
+
+        backdrop.addEventListener("click", close);
+        closeBtn.addEventListener("click", close);
+
+        resetBtn.addEventListener("click", () => {
+            if (!currentId) return;
+            const idToReopen = currentId;
+            clearCellContent(`concept-${idToReopen}`);
+            /*
+             * Easiest reset path: re-open. Tears down + rebuilds the editor
+             * with the seed code, which is exactly what the user wants. The
+             * id has to be captured BEFORE close() because close nulls it.
+             */
+            close();
+            open(idToReopen);
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (!isOpen) return;
+            if (e.key === "Escape") {
+                e.preventDefault();
+                close();
+            }
+        });
+
+        /*
+         * Delegate ALL play-button clicks here. The buttons live on each
+         * concept card and are present at page load; new cards never appear
+         * after hydration, so a one-shot listener is enough.
+         */
+        document.addEventListener("click", (e) => {
+            const target = e.target as HTMLElement | null;
+            const btn = target?.closest<HTMLElement>("[data-concept-play]");
+            if (!btn) return;
+            const card = btn.closest<HTMLElement>("[data-concept-card]");
+            const id = card?.getAttribute("data-concept-id");
+            if (id) {
+                e.preventDefault();
+                e.stopPropagation();
+                open(id);
+            }
+        });
+    }
+</script>

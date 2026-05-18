@@ -1,0 +1,143 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, string } from "~/lib/hl";
+
+const lesson = findLesson("09-static-paths")!;
+
+const shapeCode = `${kw("---")}
+${kw("export")} ${kw("async")} ${kw("function")} ${ident("getStaticPaths")}${punct("()")} ${punct("{")}
+&nbsp;&nbsp;${kw("return")} ${punct("[")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("{")} ${ident("params")}${punct(":")} ${punct("{")} ${ident("name")}${punct(":")} ${string("mae")} ${punct("}")}${punct(",")} ${ident("props")}${punct(":")} ${punct("{")} ${ident("mission")}${punct(":")} ${string("Endeavour")} ${punct("}")} ${punct("}")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("{")} ${ident("params")}${punct(":")} ${punct("{")} ${ident("name")}${punct(":")} ${string("ovidiu")} ${punct("}")}${punct(",")} ${ident("props")}${punct(":")} ${punct("{")} ${ident("mission")}${punct(":")} ${string("Apollo 42")} ${punct("}")} ${punct("}")}${punct(",")}
+&nbsp;&nbsp;${punct("];")}
+${punct("}")}
+${kw("---")}`;
+
+const code = `---
+export async function getStaticPaths() {
+    const crew = [
+        { name: "mae",    mission: "Endeavour" },
+        { name: "ovidiu", mission: "Apollo 42" },
+        { name: "sergei", mission: "Soyuz 11" },
+    ];
+    return crew.map(a => ({
+        params: { name: a.name },
+        props: { mission: a.mission },
+    }));
+}
+
+const { name } = Astro.params;
+const { mission } = Astro.props;
+---
+
+<html>
+    <h1>{name}</h1>
+    <p>flying on {mission}</p>
+    <p class="meta">URL: /crew/{name}</p>
+</html>
+
+<style>
+    body { font-family: system-ui; padding: 12px 4px; }
+    h1 { text-transform: capitalize; margin: 0 0 4px; font-size: 28px; }
+    .meta { color: #888; font-family: monospace; font-size: 13px; }
+</style>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "add-astronaut",
+        text: "add a 4th astronaut to the <code>crew</code> array (any name)",
+        check: { kind: "sourceMatches", pattern: "(\\{[^}]*name:[^}]+mission:[^}]+\\}[^\\[\\]]*){4}" },
+    },
+    {
+        id: "first-one-changes",
+        text: "rearrange the array — put a different astronaut first (the preview follows)",
+        check: { kind: "sourceNotMatches", pattern: "crew\\s*=\\s*\\[\\s*\\{\\s*name:\\s*\"mae\"" },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Last page we waved a hand at the function that <span class="italic">"tells Astro about the astronauts"</span>. Time to actually look at it.</p>
+            <p>&nbsp;</p>
+            <p><CodeInline highlight>getStaticPaths</CodeInline> is an <CodeInline color="red">export</CodeInline>ed function you put in a <CodeInline>[brackets].astro</CodeInline> file. Astro calls it <Marker>once at build time</Marker> and uses what it returns to decide which URLs exist.</p>
+            <p>&nbsp;</p>
+            <p>Each entry in the returned array becomes one page. The shape is always the same:</p>
+        </Prose>
+
+        <CodeCell file="src/pages/crew/[name].astro" note="the shape" code={shapeCode} />
+
+        <Prose class="mt-4">
+            <p><CodeInline color="purple">params</CodeInline> fills the brackets in the file name. Here it's <CodeInline>name</CodeInline>, so <CodeInline>params.name = "mae"</CodeInline> means <CodeInline>/crew/mae</CodeInline>.</p>
+            <p>&nbsp;</p>
+            <p><CodeInline color="purple">props</CodeInline> is the data each page receives. It lands on <CodeInline color="red">Astro.props</CodeInline> in the template — same shape as in lesson 4, just delivered route-by-route.</p>
+            <p>&nbsp;</p>
+            <p>Below: the full file, working. The sandbox renders <Marker>whichever astronaut is first</Marker> in your array. Swap the order, add new names, watch the preview follow.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l9-paths"
+            file="src/pages/crew/[name].astro"
+            note="getStaticPaths + template, together"
+            code={code}
+            minHeight={400}
+        />
+
+        <Prose class="mt-4">
+            <p>In a real build, Astro would write out <span class="italic">all three</span> HTML files — <CodeInline>/crew/mae</CodeInline>, <CodeInline>/crew/ovidiu</CodeInline>, <CodeInline>/crew/sergei</CodeInline>. <Marker color="pink">Astrobench shows one at a time</Marker>, but the function is doing the same work.</p>
+            <p>&nbsp;</p>
+            <p>When astronauts come and go, you don't edit the template — you edit the array. The router does the rest.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l9-paths" caption="page 9 ✦ /crew/{first.name}" rotate={2.5} frameHeight={200} />
+
+            <Challenge cellId="ch1-l9-paths" lessonSlug={lesson.slug} title="try this →" completedMessage="★ Path Maker unlocked!" items={challenges} rotate={-1.5} />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-tight mb-2">params vs props</h3>
+                <ul class="font-hand text-[16px] text-ink-dark/90 leading-tight space-y-1">
+                    <li><CodeInline color="purple">params</CodeInline> → <span class="italic">in the URL</span> (fills the brackets)</li>
+                    <li><CodeInline color="purple">props</CodeInline> → <span class="italic">in the template</span> (on <CodeInline color="red">Astro.props</CodeInline>)</li>
+                </ul>
+                <p class="font-hand text-[15px] text-ink-soft leading-tight mt-2 italic">
+                    Same data, different roles.
+                </p>
+            </Sticky>
+
+            <Sticky color="mint" rotate={-1}>
+                <h4 class="font-title text-[22px] leading-tight text-ink-dark mb-1">when does this run?</h4>
+                <p class="font-hand text-[15px] text-ink-soft leading-tight">
+                    Once, at <Marker>build time</Marker>. The output is plain HTML files — by the time a visitor shows up, the pages already exist.
+                </p>
+            </Sticky>
+
+            <Sticky color="peach" rotate={2}>
+                <h4 class="font-title text-[22px] leading-tight text-ink-dark mb-1">brackets &amp; nesting</h4>
+                <p class="font-hand text-[15px] text-ink-soft leading-tight">
+                    Multiple placeholders? <CodeInline>[ship]/[name].astro</CodeInline>. The params object gets both keys. The function still returns one entry per page.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    import { registerCell } from "~/runtime/registry";
+    registerCell("ch1-l9-paths", {
+        /* Fallbacks if getStaticPaths is broken / mid-edit — keeps preview alive. */
+        params: { name: "mae" },
+        props: { mission: "Endeavour" },
+    });
+</script>

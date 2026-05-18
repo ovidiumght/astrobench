@@ -1,0 +1,122 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import { findLesson } from "~/lib/lessons";
+
+const lesson = findLesson("05-the-whole-crew")!;
+
+const code = `---
+import Card from "~/components/Card.astro";
+
+const crew = [
+    { name: "Mae", mission: "Endeavour" },
+    { name: "Ovidiu", mission: "Apollo 42" },
+    { name: "Sergei", mission: "Soyuz 11" },
+];
+---
+
+<div>
+    {crew.map(a => <Card {...a} />)}
+</div>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "add-astronaut",
+        text: "add a <strong>4th astronaut</strong> to the <code>crew</code> array",
+        check: {
+            kind: "all",
+            checks: [
+                { kind: "outputMatches", pattern: "(class=\"card\"[\\s\\S]*?){4}" },
+            ],
+        },
+    },
+    {
+        id: "rename-one",
+        text: "change one of the existing names (anything goes)",
+        check: {
+            kind: "any",
+            checks: [
+                { kind: "sourceNotMatches", pattern: "name:\\s*['\"]Mae['\"]" },
+                { kind: "sourceNotMatches", pattern: "name:\\s*['\"]Ovidiu['\"]" },
+                { kind: "sourceNotMatches", pattern: "name:\\s*['\"]Sergei['\"]" },
+            ],
+        },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Hardcoding three <CodeInline color="blue">&lt;Card&gt;</CodeInline> tags works. <Marker>Six</Marker> would be tedious. <Marker color="pink">Sixty</Marker> would be a sin.</p>
+            <p>&nbsp;</p>
+            <p>Put the data in an array. Use <CodeInline color="red">.map()</CodeInline> in the template to render one card per item. The <CodeInline>{`{...a}`}</CodeInline> bit spreads every property of the astronaut into props — a tidy trick.</p>
+            <p>&nbsp;</p>
+            <p>It's all wired up below. <Marker>Add a 4th astronaut</Marker> and watch a new card appear without touching the template.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l5"
+            file="src/pages/index.astro"
+            note="rendering a list"
+            code={code}
+            minHeight={240}
+        />
+
+        <Prose class="mt-4">
+            <p>Same component, many cards, <Marker color="pink">zero copy-paste</Marker>. You just made a dashboard.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l5" caption="page 5 ✦ one array, many cards" rotate={2} frameHeight={380} />
+
+            <Challenge cellId="ch1-l5" lessonSlug={lesson.slug} title="try this →" completedMessage="★ crew caller unlocked!" items={challenges} rotate={-1.5} />
+
+            <Sticky color="yellow" rotate={2}>
+                <h3 class="font-title text-[24px] text-ink-dark leading-none mb-2">.map() in words</h3>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    "For each item, give me back this thing." It's the most common pattern in component-land — you'll use it everywhere.
+                </p>
+            </Sticky>
+
+            <Sticky color="blue" rotate={-1.5}>
+                <h4 class="font-title text-[22px] leading-tight text-ink-dark mb-1">target shape</h4>
+                <pre class="font-type text-[12px] text-ink-navy leading-snug whitespace-pre overflow-x-auto">{`<div>
+  {crew.map(a =>
+    <Card {...a} />)}
+</div>`}</pre>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    import { registerCell } from "~/runtime/registry";
+
+    const escape = (s: unknown) =>
+        String(s ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+    registerCell("ch1-l5", {
+        components: {
+            Card: (props) =>
+                `<div class="card"><h1>Hello, ${escape(props.name)}!</h1><p>${escape(props.mission)} · ready for orbit.</p></div>`,
+        },
+        baseStyles: `
+            body { display: flex; flex-direction: column; gap: 8px; }
+            .card { background: #0d0b2e; color: #fef3c7; padding: 10px 14px; border-radius: 10px; font-family: system-ui; margin: 0; }
+            .card h1 { font-size: 18px; line-height: 1.1; margin: 0 0 2px; font-weight: bold; }
+            .card p { font-size: 12px; margin: 0; opacity: 0.85; }
+        `,
+    });
+</script>

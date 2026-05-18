@@ -1,0 +1,138 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+import { open, close, a, kw, ident, punct, expr, str, tag, comment, attr, string } from "~/lib/hl";
+
+const lesson = findLesson("02-add-some-markdown")!;
+
+const mdCode = `${punct("---")}
+${attr("title")}${punct(":")} ${str("Launch day")}
+${attr("date")}${punct(":")} ${str("2026-10-14")}
+${attr("author")}${punct(":")} ${str("Mae Jemison")}
+${punct("---")}
+
+${kw("##")} What happened
+
+Ignition at <strong>T-0</strong>. Apollo 42 cleared the tower in <em>8 seconds</em>.
+
+The booster sep was on the nose. Mission Control breathed a long, deep breath.`;
+
+const pageCode = `${kw("---")}
+${kw("import")} ${ident("Layout")} ${kw("from")} ${str("\"~/layouts/Layout.astro\"")}${punct(";")}
+
+${comment("// markdown files are real ES modules.")}
+${comment("// frontmatter is exported as &#96;frontmatter&#96;.")}
+${kw("import")} ${punct("{")} ${ident("frontmatter")}${punct(",")} ${ident("Content")} ${punct("}")} ${kw("from")} ${str("\"~/content/logs/launch-day.md\"")}${punct(";")}
+${kw("---")}
+
+${punct("&lt;")}${tag("Layout")}${a("title", "Launch day")}${punct("&gt;")}
+&nbsp;&nbsp;${open("article")}
+&nbsp;&nbsp;&nbsp;&nbsp;${open("h1")}${expr(`${ident("frontmatter")}${punct(".")}${ident("title")}`)}${close("h1")}
+&nbsp;&nbsp;&nbsp;&nbsp;${open("p", a("class", "byline"))}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${expr(`${ident("frontmatter")}${punct(".")}${ident("author")}`)} · ${expr(`${ident("frontmatter")}${punct(".")}${ident("date")}`)}
+&nbsp;&nbsp;&nbsp;&nbsp;${close("p")}
+&nbsp;&nbsp;&nbsp;&nbsp;${punct("&lt;")}${tag("Content")} ${punct("/&gt;")}
+&nbsp;&nbsp;${close("article")}
+${punct("&lt;/")}${tag("Layout")}${punct("&gt;")}`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>So far you've written HTML in <CodeInline>.astro</CodeInline> files. Fine for buttons. <Marker>Awful for prose.</Marker></p>
+            <p>&nbsp;</p>
+            <p>For posts you want <Marker color="pink">Markdown</Marker>. Headings with <CodeInline>##</CodeInline>, italics with underscores, links in brackets. Astro reads <CodeInline>.md</CodeInline> files natively.</p>
+            <p>&nbsp;</p>
+            <p>Drop the post in a new <CodeInline>src/content/logs/</CodeInline> folder:</p>
+        </Prose>
+
+        <CodeCell file="src/content/logs/launch-day.md" note="Markdown file" code={mdCode} />
+
+        <Prose class="mt-4">
+            <p>Then a regular Astro page <CodeInline color="red">imports</CodeInline> it. Markdown files give you two things: <CodeInline highlight>frontmatter</CodeInline> (the YAML on top, as data) and <CodeInline highlight>Content</CodeInline> (a component that renders the body).</p>
+        </Prose>
+
+        <CodeCell file="src/pages/logs/launch-day.astro" highlightLine={5} code={pageCode} />
+
+        <Prose class="mt-4">
+            <p>Visit <CodeInline>/logs/launch-day</CodeInline>. The Markdown renders as proper HTML — paragraphs, headings, the lot. <Marker color="pink">Writing > coding</Marker> for content.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="page 2 ✦ /logs/launch-day" rotate={2}>
+                <div class="bg-white border border-ink-dark/15 rounded-md font-[system-ui]">
+                    <div class="bg-paper-warm px-3 py-2 border-b border-ink-dark/10 text-[11px] font-bold text-ink-dark">
+                        🛰 Mission Control
+                    </div>
+                    <div class="px-3 py-3">
+                        <h2 class="text-[20px] font-bold mb-1 text-ink-dark leading-tight">Launch day</h2>
+                        <p class="text-[10px] text-ink-soft mb-2">Mae Jemison · 2026-10-14</p>
+                        <h3 class="text-[13px] font-bold mb-1 mt-2 text-ink-dark">What happened</h3>
+                        <p class="text-[11px] text-ink-dark/90 leading-snug">
+                            Ignition at <strong>T-0</strong>. Apollo 42 cleared the tower in <em>8 seconds</em>.
+                        </p>
+                    </div>
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">prose from markdown.</p>
+            </Polaroid>
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "content/",
+                            isNew: true,
+                            children: [
+                                {
+                                    name: "logs/",
+                                    isNew: true,
+                                    children: [{ name: "launch-day.md", isNew: true }],
+                                },
+                            ],
+                        },
+                        {
+                            name: "pages/",
+                            children: [
+                                { name: "index.astro" },
+                                {
+                                    name: "logs/",
+                                    isNew: true,
+                                    children: [{ name: "launch-day.astro", isNew: true }],
+                                },
+                            ],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">Already free:</h3>
+                <ul class="font-hand text-[16px] text-ink-dark/90 space-y-1 leading-tight">
+                    <li>· <CodeInline>**bold**</CodeInline>, <CodeInline>*italic*</CodeInline></li>
+                    <li>· <CodeInline>[links](url)</CodeInline></li>
+                    <li>· headings, lists, blockquotes</li>
+                    <li>· fenced code blocks with highlighting</li>
+                    <li>· tables, images, footnotes</li>
+                </ul>
+            </Sticky>
+
+            <Sticky color="mint" rotate={-1.5}>
+                <h3 class="font-title text-[24px] text-ink-dark leading-none mb-1">Try this</h3>
+                <p class="font-hand text-[16px] text-ink-dark/90 leading-tight">
+                    Add a fenced code block to your <CodeInline>.md</CodeInline>. Astro highlights it for free — same Shiki you get in your IDE.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

@@ -1,0 +1,127 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import CodeCell from "~/components/CodeCell.astro";
+import Polaroid from "~/components/Polaroid.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+import { kw, ident, punct, str, comment, string, num, attr, tag } from "~/lib/hl";
+
+const lesson = findLesson("07-an-api-endpoint")!;
+
+const code = `${kw("import")} ${punct("{")} ${ident("getCollection")} ${punct("}")} ${kw("from")} ${str("\"astro:content\"")}${punct(";")}
+${kw("import")} ${kw("type")} ${punct("{")} ${ident("APIRoute")} ${punct("}")} ${kw("from")} ${str("\"astro\"")}${punct(";")}
+
+${kw("export const")} ${ident("GET")}${punct(":")} ${ident("APIRoute")} ${punct("=")} ${kw("async")} ${punct("() =&gt; {")}
+&nbsp;&nbsp;${kw("const")} ${ident("logs")} ${punct("=")} ${kw("await")} ${ident("getCollection")}${punct("(")}${string("logs")}${punct(");")}
+
+&nbsp;&nbsp;${kw("const")} ${ident("body")} ${punct("=")} ${ident("logs")}${punct(".")}${ident("map")}${punct("((")}${ident("log")}${punct(") =&gt; ({")}
+&nbsp;&nbsp;&nbsp;&nbsp;${ident("id")}${punct(":")} ${ident("log")}${punct(".")}${ident("id")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${ident("title")}${punct(":")} ${ident("log")}${punct(".")}${ident("data")}${punct(".")}${ident("title")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${ident("date")}${punct(":")} ${ident("log")}${punct(".")}${ident("data")}${punct(".")}${ident("date")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${ident("author")}${punct(":")} ${ident("log")}${punct(".")}${ident("data")}${punct(".")}${ident("author")}${punct(",")}
+&nbsp;&nbsp;${punct("}));")}
+
+&nbsp;&nbsp;${kw("return new")} ${ident("Response")}${punct("(")}${ident("JSON")}${punct(".")}${ident("stringify")}${punct("(")}${ident("body")}${punct("), {")}
+&nbsp;&nbsp;&nbsp;&nbsp;${ident("headers")}${punct(": {")} ${string("Content-Type")}${punct(":")} ${string("application/json")} ${punct("},")}
+&nbsp;&nbsp;${punct("});")}
+${punct("};")}`;
+
+const responseCode = `${punct("[")}
+&nbsp;&nbsp;${punct("{")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("id")}${punct(":")} ${str("launch-day")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("title")}${punct(":")} ${str("Launch day")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("date")}${punct(":")} ${str("2026-10-14")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("author")}${punct(":")} ${str("Mae Jemison")}
+&nbsp;&nbsp;${punct("},")}
+&nbsp;&nbsp;${punct("{")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("id")}${punct(":")} ${str("first-eva")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("title")}${punct(":")} ${str("First EVA")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("date")}${punct(":")} ${str("2026-10-18")}${punct(",")}
+&nbsp;&nbsp;&nbsp;&nbsp;${attr("author")}${punct(":")} ${str("Sergei Volkov")}
+&nbsp;&nbsp;${punct("}")}
+${punct("]")}`;
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Until now, every file in <CodeInline>src/pages/</CodeInline> returned HTML. But your project is about to want something else — <Marker>JSON</Marker>. For the search island you'll build next, for syndication feeds, for embeds.</p>
+            <p>&nbsp;</p>
+            <p>Astro lets you write API routes the same way you wrote pages. The trick: the file ends in <CodeInline>.ts</CodeInline> (or <CodeInline>.js</CodeInline>) instead of <CodeInline>.astro</CodeInline>, and you <CodeInline color="red">export</CodeInline> an HTTP method function.</p>
+        </Prose>
+
+        <CodeCell file="src/pages/api/logs.json.ts" note="server-only" highlightLine={4} code={code} />
+
+        <Prose class="mt-4">
+            <p>Visit <CodeInline>/api/logs.json</CodeInline> in your browser. You'll see:</p>
+        </Prose>
+
+        <CodeCell file="GET /api/logs.json" note="response" code={responseCode} />
+
+        <Prose class="mt-4">
+            <p>Same content collection you used in lesson 3 — just rendered as JSON instead of HTML. <Marker color="pink">One source of truth, two output shapes.</Marker></p>
+            <p>&nbsp;</p>
+            <p>This file is server-only. No JS reaches the browser. The endpoint is generated at build time as a static <CodeInline>.json</CodeInline> file.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <Polaroid caption="page 7 ✦ ★ unlocked: endpoint engineer" rotate={-2}>
+                <div class="bg-[#1a1a2e] text-[#a8d8ff] rounded-md font-type text-[10px] p-3 leading-relaxed">
+                    <div class="text-[#6dffaf] mb-1">$ curl /api/logs.json</div>
+                    <div class="text-ink-soft">[</div>
+                    <div class="ml-2 text-ink-soft">{`{`}</div>
+                    <div class="ml-4">
+                        <span class="text-[#ffd966]">"id"</span>: <span class="text-[#ff8d8d]">"launch-day"</span>,
+                    </div>
+                    <div class="ml-4">
+                        <span class="text-[#ffd966]">"title"</span>: <span class="text-[#ff8d8d]">"Launch day"</span>
+                    </div>
+                    <div class="ml-2 text-ink-soft">{`},`}</div>
+                    <div class="ml-2 text-ink-soft">{`{ ... }`}</div>
+                    <div class="text-ink-soft">]</div>
+                </div>
+                <p class="mt-2 font-sketch text-sm text-pen-green italic">data, not a page.</p>
+            </Polaroid>
+
+            <FileTree
+                title="src/pages/"
+                rotate={-2}
+                root={{
+                    name: "pages",
+                    children: [
+                        { name: "index.astro" },
+                        {
+                            name: "logs/",
+                            children: [{ name: "index.astro" }, { name: "[...slug].astro" }],
+                        },
+                        {
+                            name: "api/",
+                            isNew: true,
+                            children: [{ name: "logs.json.ts", isNew: true, note: "→ /api/logs.json" }],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={1.5}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">All methods welcome</h3>
+                <p class="font-hand text-[17px] text-ink-dark/90 leading-tight">
+                    Export <CodeInline color="red">GET</CodeInline>, <CodeInline color="red">POST</CodeInline>, <CodeInline color="red">PUT</CodeInline>, <CodeInline color="red">DELETE</CodeInline> — Astro routes them automatically. (POST and friends need an <Marker>SSR adapter</Marker> — see lesson 10.)
+                </p>
+            </Sticky>
+
+            <Sticky color="peach" rotate={-1.5}>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-sketch text-[13px] text-pen-red uppercase tracking-wider">★ unlocked!</span>
+                </div>
+                <h4 class="font-title text-[24px] leading-tight text-ink-dark">Endpoint Engineer</h4>
+                <p class="font-hand text-[16px] text-ink-soft leading-tight">+80 XP · pages can be APIs too</p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>

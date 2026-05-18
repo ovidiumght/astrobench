@@ -1,0 +1,129 @@
+---
+import NotebookLayout from "~/layouts/NotebookLayout.astro";
+import NotebookPage from "~/components/NotebookPage.astro";
+import LiveCell from "~/components/LiveCell.astro";
+import LivePreview from "~/components/LivePreview.astro";
+import Challenge, { type ChallengeItem } from "~/components/Challenge.astro";
+import Sticky from "~/components/Sticky.astro";
+import Prose from "~/components/Prose.astro";
+import Marker from "~/components/Marker.astro";
+import CodeInline from "~/components/CodeInline.astro";
+import FileTree from "~/components/FileTree.astro";
+import { findLesson } from "~/lib/lessons";
+
+const lesson = findLesson("08-profile-pages")!;
+
+const templateCode = `---
+const { name, mission } = Astro.props;
+---
+
+<html>
+    <h1>{name}</h1>
+    <p>flying on {mission}</p>
+    <p><a href="/crew">← back to the crew</a></p>
+</html>
+
+<style>
+    body { font-family: system-ui; padding: 12px 4px; }
+    h1 { text-transform: capitalize; margin: 0 0 4px; }
+    a { color: #2563eb; }
+</style>`;
+
+const challenges: ChallengeItem[] = [
+    {
+        id: "personal-touch",
+        text: "add one more line of personal detail (a third <code>&lt;p&gt;</code>)",
+        check: { kind: "outputMatches", pattern: "(<p[^>]*>[\\s\\S]*?</p>[\\s\\S]*?){3}" },
+    },
+    {
+        id: "tweak-style",
+        text: "change something in the <code>&lt;style&gt;</code> block (color, font, anything)",
+        check: {
+            kind: "any",
+            checks: [
+                { kind: "sourceNotMatches", pattern: "color:\\s*#2563eb" },
+                { kind: "sourceNotMatches", pattern: "font-family:\\s*system-ui" },
+                { kind: "sourceNotMatches", pattern: "text-transform:\\s*capitalize" },
+            ],
+        },
+    },
+];
+---
+
+<NotebookLayout title={lesson.title}>
+    <NotebookPage lesson={lesson}>
+        <Prose>
+            <p>Six astronauts. Six profile pages — <Marker>same shape</Marker>, different person. Writing six near-identical files would be a bad day.</p>
+            <p>&nbsp;</p>
+            <p>Astro's file-based router has a trick: <CodeInline highlight>square brackets</CodeInline> in the filename. <CodeInline>[name].astro</CodeInline> doesn't mean "a file literally called <code>[name]</code>". It means: <Marker color="pink">name is a placeholder. Fill it in.</Marker></p>
+            <p>&nbsp;</p>
+            <p>One file at <CodeInline>src/pages/crew/[name].astro</CodeInline> generates as many URLs as you want: <CodeInline>/crew/mae</CodeInline>, <CodeInline>/crew/ovidiu</CodeInline>, <CodeInline>/crew/sergei</CodeInline>… Same template, different output.</p>
+        </Prose>
+
+        <Prose class="mt-2">
+            <p>Below is the <Marker>template</Marker> half of that file — what gets rendered for each URL. The bracketed value (<CodeInline>name</CodeInline>) shows up on <CodeInline color="red">Astro.props</CodeInline>, the same way props arrived in lesson 4.</p>
+            <p>&nbsp;</p>
+            <p>The sandbox is pretending we visited <CodeInline>/crew/mae</CodeInline>, so it feeds <CodeInline>name: "mae", mission: "Endeavour"</CodeInline> in for you. Tweak the template — change wording, restyle the link, add personal detail.</p>
+        </Prose>
+
+        <LiveCell
+            cellId="ch1-l8"
+            file="src/pages/crew/[name].astro (template)"
+            note="rendered for /crew/mae"
+            code={templateCode}
+            minHeight={280}
+        />
+
+        <Prose class="mt-4">
+            <p>The other half of the file — the part that says <span class="italic">"here are all the names to fill in"</span> — is its own concept. <Marker color="pink">That's the next lesson.</Marker> For now, just trust that Astro knows about the three astronauts and built three pages.</p>
+        </Prose>
+
+        <Fragment slot="pinboard">
+            <LivePreview cellId="ch1-l8" caption="page 8 ✦ /crew/mae" rotate={2.5} frameHeight={200} />
+
+            <Challenge cellId="ch1-l8" lessonSlug={lesson.slug} title="try this →" completedMessage="★ nice tweak!" items={challenges} rotate={-1.5} />
+
+            <FileTree
+                title="src/"
+                rotate={-2}
+                root={{
+                    name: "src",
+                    children: [
+                        {
+                            name: "pages/",
+                            children: [
+                                { name: "index.astro" },
+                                { name: "about.astro" },
+                                {
+                                    name: "crew/",
+                                    children: [{ name: "[name].astro", isNew: true, note: "one file → many pages" }],
+                                },
+                            ],
+                        },
+                    ],
+                }}
+            />
+
+            <Sticky color="yellow" rotate={2}>
+                <h3 class="font-title text-[26px] text-ink-dark leading-none mb-2">The trick</h3>
+                <p class="font-hand text-[16px] text-ink-dark/90 leading-tight">
+                    File names in <CodeInline>src/pages/</CodeInline> with <Marker>square brackets</Marker> turn into URL patterns. The bracketed bit lands on <CodeInline color="red">Astro.props</CodeInline>.
+                </p>
+            </Sticky>
+
+            <Sticky color="blue" rotate={-1.5}>
+                <h4 class="font-title text-[22px] leading-tight text-ink-dark mb-1">next page</h4>
+                <p class="font-hand text-[15px] text-ink-soft leading-tight">
+                    Lesson 9 opens up the function that decides <span class="italic">which</span> names get a page. It's how the magic happens — and it's worth a slow read.
+                </p>
+            </Sticky>
+        </Fragment>
+    </NotebookPage>
+</NotebookLayout>
+
+<script>
+    import { registerCell } from "~/runtime/registry";
+    registerCell("ch1-l8", {
+        props: { name: "mae", mission: "Endeavour" },
+    });
+</script>

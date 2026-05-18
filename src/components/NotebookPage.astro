@@ -1,0 +1,128 @@
+---
+import type { Lesson } from "~/lib/lessons";
+import { adjacent, getChapter, lessonUrl, chapterUrl } from "~/lib/lessons";
+import RunButton from "./RunButton.astro";
+import BinderFooter from "./BinderFooter.astro";
+
+type Props = {
+    lesson: Lesson;
+};
+
+const { lesson } = Astro.props;
+const chapter = getChapter(lesson);
+const { prev, next, nextStartsChapter, prevEndsChapter } = adjacent(lesson.slug);
+const progress = Math.round((lesson.step / chapter.lessons.length) * 100);
+const tocUrl = chapterUrl(chapter);
+
+const prevLabel = prev
+    ? prevEndsChapter
+        ? `◄ back to Ch. ${prevEndsChapter.number}: ${prev.title}`
+        : `◄ ${prev.title}`
+    : "◄ table of contents";
+const prevHref = prev ? lessonUrl(prev) : tocUrl;
+
+const nextLabel = next
+    ? nextStartsChapter
+        ? `🚀 Start Ch. ${nextStartsChapter.number}: ${nextStartsChapter.shortName} →`
+        : `next: ${next.title} →`
+    : "★ done — back to start";
+const nextHref = next ? lessonUrl(next) : "/";
+---
+
+<main class="relative z-10 mx-auto max-w-[1500px] px-8 pb-14">
+    <div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 items-start">
+        <article class="relative bg-paper-yellow shadow-paper border-2 border-paper-edge rounded-sm overflow-hidden">
+            <span class="absolute -top-3 left-[24%] w-32 h-7 bg-tape border-x border-tape-edge -rotate-2 z-10 pointer-events-none" style="background-image: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);"></span>
+            <span class="absolute -top-2 right-[18%] w-24 h-6 bg-marker-pink/55 border-x border-pen-red/25 rotate-3 z-10 pointer-events-none"></span>
+
+            <div class="absolute top-3 left-0 right-0 flex justify-center gap-32 pointer-events-none">
+                <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+                <span class="block h-4 w-4 rounded-full bg-desk-dark/80" style="box-shadow: inset 0 2px 2px rgba(0,0,0,0.25);"></span>
+            </div>
+
+            <div class="relative pl-24 pr-12 pt-16 pb-14 ruled">
+                <div class="absolute left-[68px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+                <div class="absolute left-[72px] top-0 bottom-0 w-px bg-pen-red/40"></div>
+
+                <div class="absolute -left-1 top-12 -rotate-[8deg] font-sketch text-pen-red text-lg leading-tight w-20 text-center pointer-events-none">
+                    <div>Step</div>
+                    <div class="text-2xl leading-none">{lesson.step}<span class="text-base text-pen-red/70">/{chapter.lessons.length}</span></div>
+                </div>
+
+                <div class="relative mb-6">
+                    <h1 class="font-title text-[58px] leading-[0.9] text-ink-dark mb-1">
+                        <slot name="title">{lesson.title}</slot>
+                    </h1>
+                    <span class="block h-2 w-56 bg-marker-yellow/70 -mt-3 -ml-1 -rotate-1 mb-2"></span>
+                    <p class="font-sketch text-lg text-ink-soft italic mt-2 max-w-[520px]">{lesson.storyBeat}</p>
+                </div>
+
+                <slot />
+
+                <div class="absolute bottom-4 right-6 -rotate-3 font-sketch text-base text-ink-soft/60 italic pointer-events-none">
+                    — page {lesson.step} —
+                </div>
+            </div>
+        </article>
+
+        <aside class="space-y-8 lg:pt-10">
+            <slot name="pinboard" />
+        </aside>
+    </div>
+
+    <BinderFooter lessonSlug={lesson.slug} />
+
+    <div class="mt-12 flex flex-wrap items-center gap-5 px-2">
+        <div class="flex items-center gap-2 font-sketch text-base text-ink-soft">
+            <span class="h-3 w-3 rounded-full bg-pen-green inline-block animate-pulse"></span>
+            <span>saved a moment ago</span>
+        </div>
+
+        <span
+            data-lesson-complete-indicator
+            class="hidden items-center gap-1.5 font-sketch text-base text-pen-green"
+        >
+            <span class="text-pen-red">★</span>
+            <span>previously completed</span>
+        </span>
+
+        <span class="hidden sm:inline text-ink-soft/40">·</span>
+
+        <div class="flex items-center gap-1.5 font-sketch text-base text-ink-soft">
+            <span class="text-pen-red">progress</span>
+            <span class="text-ink-dark text-lg">{progress}%</span>
+        </div>
+
+        <span class="hidden sm:inline text-ink-soft/40">·</span>
+
+        <div class="flex items-center gap-1.5 font-sketch text-base text-ink-soft">
+            <span class="text-pen-red">earn</span>
+            <span class="text-ink-dark text-lg">+{lesson.xp} XP</span>
+        </div>
+
+        <div class="ml-auto flex items-center gap-3">
+            <a href={prevHref} class="font-sketch text-lg text-ink-soft hover:text-ink-dark px-3 py-1.5 cursor-pointer">
+                {prevLabel}
+            </a>
+            <RunButton label={nextLabel} href={nextHref} color={nextStartsChapter ? "red" : "ink"} />
+        </div>
+    </div>
+
+    <span data-lesson-slug={lesson.slug} class="hidden"></span>
+    <script>
+        import { markLessonVisited, isLessonComplete } from "~/scripts/progress";
+        const slugEl = document.querySelector<HTMLElement>("[data-lesson-slug]");
+        const slug = slugEl?.getAttribute("data-lesson-slug");
+        if (slug) {
+            markLessonVisited(slug);
+            if (isLessonComplete(slug)) {
+                const indicator = document.querySelector<HTMLElement>("[data-lesson-complete-indicator]");
+                if (indicator) {
+                    indicator.classList.remove("hidden");
+                    indicator.classList.add("inline-flex");
+                }
+            }
+        }
+    </script>
+</main>
